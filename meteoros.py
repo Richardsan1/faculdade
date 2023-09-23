@@ -6,9 +6,15 @@ def statistcs():
 def unifyStats():
     return None
 
+# essa função roda a rotina de coleta de dados de chuva de meteoros
+# conforme ela for coletando os dados, ela deve ir adicionando em uma lista
+# os dados recebidos são a distância (em metros) e o ângulo do meteoro (em graus)
+# a função deve retornar uma lista com os dados coletados
+
 def getMeteors():
     meteors = []
     i = 1
+    # pede os dados de cada meteoro até que o usuário digite -1 para a distância
     while True:
         print(f"Registro #{i}")
         try:
@@ -25,11 +31,13 @@ def getMeteors():
     input("Pressione ENTER para continuar...")
     return meteors
 
-# apenas uma função para limpar a tela
+# apenas uma função para limpar a tela e manter a legibilidade do programa
 clear = lambda : system('cls' if name == 'nt' else 'clear')
+
 # cordenadas da fazenda
 perimeter = []
-
+# dados dos meteoros
+meteors = []
 
 while True:
     # Menu
@@ -87,5 +95,5 @@ while True:
             clear()
             continue
     elif option == 3:
-        getMeteors()
+        meteors = getMeteors()
         clear()
