@@ -1,4 +1,7 @@
-# Santiago Ladrón Guevara - 
+"""
+This module provides functions for calculating meteorological data.
+"""
+# Santiago Guevara - 42333067
 # Reynaldo Panella Netto - 42306868
 # Richard Barbosa Sanches - 32385374
 from os import system, name
@@ -58,11 +61,11 @@ while True:
         edificacaoy1 = float(input("Coordenada y1 da edificação: "))
         edificacaox2 = float(input("Coordenada x2 da edificação: "))
         edificacaoy2 = float(input("Coordenada y2 da edificação: "))
-        
+
         print("Valores salvos com sucesso!")
         input("Pressione ENTER para continuar...")
         system('cls' if name == 'nt' else 'clear')
-    
+
     # recebe a coordenada do lab no plano cartesiano
     elif option == 2:
         print("Unificar sistemas de coordenadas de referência")
@@ -77,11 +80,11 @@ while True:
     # recebe a localização dos meteoros e transforma em coordenadas cartesianas
     elif option == 3:
         # não pode ser acessado caso não tenha sido definido o perímetro da fazenda e da edificação
-        if fazendax1 == None:
+        if fazendax1 is None:
             print("Impossível processar qualquer registro de queda no momento: localização da propriedade ainda não informada.")
-        elif labx == None:
+        elif labx is None:
             print("Impossível processar qualquer registro de queda no momento: não foi feita a unificação dos sistemas referenciais usados nos cálculos.")
-        
+
         # recebe os dados de cada meteoro
         # até que seja digitado -1
         else:
@@ -119,7 +122,7 @@ while True:
             print(f"Fim da coleta de registros: {quedas} queda(s) informada(s). ")
 
         input("Pressione ENTER para continuar...")
-        system('cls' if name == 'nt' else 'clear') 
+        system('cls' if name == 'nt' else 'clear')
 
     # mostra as estatísticas
     elif option == 4:
@@ -127,7 +130,7 @@ while True:
         # ou caso não tenha sido processado nenhum registro de queda
         if quedas == 0:
             print("Impossivel gerar estatísticas: nenhum registro de queda processado.")
-        
+
         else:
             print(f"Total de quedas registradas: {quedas} (100%)")
             print(f"Quedas dentro da propriedade: {quedaFaz} ({quedaFaz / quedas * 100:.2f}%)")
