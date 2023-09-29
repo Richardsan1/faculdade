@@ -1,6 +1,3 @@
-"""
-This module provides functions for calculating meteorological data.
-"""
 # Santiago Guevara - 42333067
 # Reynaldo Panella Netto - 42306868
 # Richard Barbosa Sanches - 32385374
