@@ -1,377 +1,261 @@
-# Lucas deu ideias e fez o molde do codigo
-# Richard finalizou a criação de usuários, sistema de cadastro e login e o sistema de saque e depósito
-# Cauã fez as funcionalidades de adm, a transferência entre contas e o limite de depósito
-# Guilherme fez a funcionalidade empréstimo e testou as entradas de dados
+from os import system, name
+import random as r
 
-user = {
-    "codigo": 0,
-    "nome": "",
-    "senha": "",
-    "dinheiro": 0
-}  # Molde do usuário
+clear = lambda: system('cls' if name == 'nt' else 'clear')  # Limpa a tela
 
-# array com todos os usuários cadastrados no sistema
-users = [{"codigo": 0, "nome": "adm", "senha": "123", "dinheiro": 0}]
-MAX_BANK_NOTES = 2000  # Quantidade máxima de notas no caixa
-MAX_LOAN = 1000  # Limite de empréstimo
-bank_notes = 0  # Quantidade de notas no caixa
-activeUser = -1
-isLogged = False
-isAdm = False
+RED = '\u001b[31m' # Cores
+ENDC = '\033[0m' # Desativa as cores
 
-money = {
-    "200": 0,
-    "100": 0,
-    "50": 0,
-    "20": 0,
-    "10": 0,
-    "5": 0,
-    "2": 0
-}  # Dinheiro guardado no caixa
 
-while True:
-    if isLogged == False and isAdm == False:
-        print("**Bem vindo ao caixa eletrônico**")
-        print("\nDigite 1 para se cadastrar")
-        print("Digite 2 para acessar sua conta")
-        print("Digite 9 para sair")
+# user = {
+#     id: 0
+#     nome: 1
+#     senha: 2
+#     telefone: 3
+#     email: 4
+#     saldo: 5
+#     credito: 6
+#     credito_gasto: 7
+# }
+user = [0, "name", "pass", "tel", "email", 0, 0, 0]# Molde do usuário
 
-        option = input("Digite sua opção: ")
+statement = []  # Extrato bancário
 
-        if option == "1":  # Cadastro
-            user["codigo"] = int(len(users))
-            user["nome"] = input("Digite seu nome: ")
-            user["senha"] = input("Digite sua senha: ")
-            users.append(user.copy())
-            users[int(len(users) - 1)]["dinheiro"] = 0
-            print("\nUsuário cadastrado com sucesso")
-            print(f"seu código é {user['codigo']}\n")
+def getAccount(): # verifica se o número da conta está correto
+    while True:
+        accountId = int(input("INFORME O NÚMERO DA CONTA: "))
+        if accountId != user[0]:
+            clear()
+            print("ESSA CONTA NÃO EXISTE!")
+        else:
+            return True
 
-            input("Pressione ENTER para continuar...")
-            print("\n")
+def getPassword(): # verifica se a senha está correta
+    err = 0
+    
+    while True:
+        accountPass = input("INFORME A SENHA: ")
+        if accountPass != user[2]:
+            clear()
+            print("SENHA INCORRETA!")
+            err += 1
+            if err == 3:
+                return False
+        else:
+            return True
 
-            user.clear()
-        elif option == "2":  # Login
-            code = input("\nDigite seu codigo: ").lower().strip()
-            password = input("Digite sua senha: ")
-            cont = 0
-            if code == "" and password == "":
-                print("\nDigite um código e senha")
-            elif code == "adm" and password == "123":
-                print("adm")
-                isAdm = True
-            else:
-                while cont < len(users):
-                    if users[cont]["codigo"] == int(code) and users[cont]["senha"] == password:
-                        isLogged = True
-                        activeUser = users[cont]["codigo"]
-                        print("\nLogado com sucesso\n")
-                        break
-                    else:
-                        cont += 1
-                else:
-                    print("\nCódigo ou senha incorretos")
-                    input("Pressione ENTER para continuar...")
-                    print("\n")
-        elif option == "9":  # Sair
+def accountRegister(): # cria a conta do usuário
+    print("MACK BANK – CADASTRO DE CONTA")
+    
+    # Cadastra os dados do usuário
+    accountNum = r.randint(1000, 9999) # gera um número aleatório de conta
+    print(f"NÚMERO DA CONTA: {accountNum}")
+    user[0] = accountNum
+
+    while True: # verifica se o nome do usuário é válido
+        user[1] = input("NOME DO CLIENTE: ").upper().strip()
+        if user[1] != "":
+            break
+    while True: # verifica se o telefone do usuário é válido
+        user[3] = input("TELEFONE.......: ").strip()
+        if user[3] != "":
+            break
+    while True: # verifica se o e-mail do usuário é válido
+        user[4] = input("E-MAIL.........: ")
+        if user[4] != "":
+            break
+    while True: # verifica se o saldo inicial é válido
+        user[5] = float(input("SALDO INICIAL...: R$"))
+        if user[5] <= 1000.0 and user[5] >= 0.0:
+            break
+        else:
+            print("SALDO INVÁLIDO!")
+    user[6] = float(input("LIMITE DE CRÉDITO: R$"))
+
+    while True: # verifica se a senha é igual a senha de confirmação
+        user[2] = input("SENHA............: ")
+        password_ = input("REPITA A SENHA...: ")
+        if password_ == user[2]:
+            break
+    
+    input("CADASTRO REALIZADO! PRESSIONE UMA TECLA PARA VOLTAR AO MENU...")
+    clear()
+
+def deposit(): # deposita dinheiro na conta
+    print("MACK BANK – DEPÓSITO")
+    
+    getAccount()
+    print(f"NOME DO CLIENTE: {user[1]}")
+    while True:
+        password = getPassword()
+        if password:
             break
 
-    elif isAdm:
-        print("\nBem vindo administrador")
-        print(f"\nCaixa tem {bank_notes} notas\n")
-        print("Digite 1 para realizar a sangria")
-        print("Digite 2 para realizar a entrada de cedulas")
-        print("Digite 3 para realizar a leitura do caixa")
-        print("Digite 8 para sair do modo administrador")
-        print("Digite 9 para sair do sistema")
-
-        optionAdm = input("Digite sua opção: ")
-        if optionAdm == "1":
-            bank_notes = 0
-            money = {
-                "200": 0,
-                "100": 0,
-                "50": 0,
-                "20": 0,
-                "10": 0,
-                "5": 0,
-                "2": 0
-            }
-            print("\nSangria realizada com sucesso\n")
-        elif optionAdm == "2":
-            full = False
-            total_deposited = 0
-            not_deposited = 0
-            tempMoney = {
-                "200": 0,
-                "100": 0,
-                "50": 0,
-                "20": 0,
-                "10": 0,
-                "5": 0,
-                "2": 0
-            }
-            print("\nNotas que deseja depositar:\n")
-            tempMoney["200"] = int(input("R$200: ") or 0)
-            tempMoney["100"] = int(input("R$100: ") or 0)
-            tempMoney["50"] = int(input("R$50: ") or 0)
-            tempMoney["20"] = int(input("R$20: ") or 0)
-            tempMoney["10"] = int(input("R$10: ") or 0)
-            tempMoney["5"] = int(input("R$5: ") or 0)
-            tempMoney["2"] = int(input("R$2: ") or 0)
-            for key in money:
-                if tempMoney[key] != 0:
-                    while tempMoney[key] > 0:
-                        if bank_notes >= MAX_BANK_NOTES:
-                            full = True
-                            not_deposited += tempMoney[key] * int(key)
-                            tempMoney[key] = 0
-                            print("\nCaixa lotado")
-                            break
-                        if not full:
-                            money[key] += int(key)
-                            total_deposited += int(key)
-                            bank_notes += 1
-                            tempMoney[key] -= 1
-                else:
-                    money[key] += 0
-            tempMoney.clear()
-            if not full:
-                print("\nDepósito realizado com sucesso")
-                print(f"\nTotal depositado: R${total_deposited}")
-            else:
-                print(
-                    "\nQuantia inserida não pode ser depositada, quantia não depositada será retornada")
-                print(
-                    "Para remover notas do caixa, será necessário realizar uma sangria")
-                print(f"\nTotal depositado: R${total_deposited}")
-                print(f"\nTotal não depositado: R${not_deposited}")
-            input("Pressione ENTER para continuar...")
-            print("\n")
-        elif optionAdm == "3":
-            print("\nCaixa:")
-            for key in money:
-                print(f"{key}: {money[key]}")
-            input("Pressione ENTER para continuar...")
-            print("\n")
-        elif optionAdm == "8":
-            isAdm = False
-            print("\nSaindo do modo administrador\n")
-        elif optionAdm == "9":
+    while True:
+        depositValue = float(input("VALOR DO DEPÓSITO: R$"))
+        if depositValue > 0: # verifica se o valor do depósito é válido
+            user[5] += depositValue # adiciona o depósito ao saldo da conta
+            statement.append(f"DEPÓSITO: R${depositValue:.2f}") # adiciona o depósito ao extrato bancário
             break
-    elif isLogged:
-        print("Digite 1 para depósito")
-        print("Digite 2 para saque")
-        print("Digite 3 para ver saldo")
-        print("Digite 4 para transferir")
-        print("Digite 5 para fazer um empréstimo")
-        print("Digite 8 para sair do perfil")
-        print("Digite 9 para sair\n")
+        else:
+            clear()
+            print("VALOR INVÁLIDO!")
 
-        optionLogged = input("Digite sua opção: ")
+    input("DEPÓSITO REALIZADO COM SUCESSO! PRESSIONE UMA TECLA PARA VOLTAR AO MENU...")
+    clear()
 
-        if optionLogged == "1":  # Depósito
-            full = False
-            total_deposited = 0
-            not_deposited = 0
-            tempMoney = {
-                "200": 0,
-                "100": 0,
-                "50": 0,
-                "20": 0,
-                "10": 0,
-                "5": 0,
-                "2": 0
-            }
-            print("\nNotas que deseja depositar:\n")
-            tempMoney["200"] = int(input("R$200: ") or 0)
-            tempMoney["100"] = int(input("R$100: ") or 0)
-            tempMoney["50"] = int(input("R$50: ") or 0)
-            tempMoney["20"] = int(input("R$20: ") or 0)
-            tempMoney["10"] = int(input("R$10: ") or 0)
-            tempMoney["5"] = int(input("R$5: ") or 0)
-            tempMoney["2"] = int(input("R$2: ") or 0)
-            for key in money:
-                if tempMoney[key] != 0:
-                    while tempMoney[key] > 0:
-                        if bank_notes >= MAX_BANK_NOTES:
-                            full = True
-                            not_deposited += tempMoney[key] * int(key)
-                            tempMoney[key] = 0
-                            print("\nCaixa lotado")
-                            break
-                        if not full:
-                            money[key] += int(key)
-                            users[activeUser]["dinheiro"] += int(key)
-                            total_deposited += int(key)
-                            bank_notes += 1
-                            tempMoney[key] -= 1
-                else:
-                    money[key] += 0
-            tempMoney.clear()
-            if not full:
-                print("\nDepósito realizado com sucesso")
-                print(f"\nTotal depositado: R${total_deposited}")
+def withdraw(): # saca dinheiro da conta
+    print("MACK BANK – SAQUE")
+    
+    getAccount()
+    
+    print(f"NOME DO CLIENTE: {user[1]}")
+    
+    password = getPassword()
+
+    while True and password:
+        withdrawValue = float(input("VALOR DO SAQUE: R$"))
+        
+        if withdrawValue > 0: # permite o saque se ele for válido
+            if user[5] >= withdrawValue: # permite o saque caso o usuário tenha saldo suficiente
+                user[5] -= withdrawValue
+                statement.append(f"SAQUE: - R${withdrawValue:.2f}")
+                print("SAQUE REALIZADO COM SUCESSO!")
+                input("PRESSIONE UMA TECLA PARA VOLTAR AO MENU...")
+                clear()
+                break
+            elif user[5] + user[6] - user[7] >= withdrawValue: # permite o saque caso o usuário tenha saldo suficiente no crédito, retirando o possivel do saldo e depois descontando do limitem
+                print("VOCÊ ESTÁ USANDO O SEU LIMITE DE CRÉDITO!")
+                
+                if user[5] > 0: # verifica se o usuário possui saldo na conta
+                    withdrawValue -= user[5]
+                    statement.append(f"SAQUE: - R${user[5]:.2f}")
+                    user[5] = 0
+
+                user[7] += withdrawValue
+                statement.append(f"CRÉDITO: - R${withdrawValue:.2f}")
+                print("SAQUE REALIZADO COM SUCESSO!")
+                input("PRESSIONE UMA TECLA PARA VOLTAR AO MENU...")
+                clear()
+                break
+
+            else: # não permite o saque caso o usuário não tenha saldo suficiente nem no crédito
+                clear()
+                print("VOCÊ NÃO POSSUI SALDO SUFICIENTE!")
+                if input("DESEJA TENTAR NOVAMENTE (S/N)?") in "Nn":
+                    clear()
+                    break
+        else:
+            clear()
+            print("VALOR INVÁLIDO!")
+    return password # retorna True se o usuário errou a senha 3 vezes
+
+def balance(): # mostra o saldo da conta
+    print("MACK BANK – CONSULTA SALDO")
+    
+    getAccount()
+    
+    print(f"NOME DO CLIENTE: {user[1]}")        
+    password = getPassword()
+    if password:
+        print(f"SALDO EM CONTA: R${user[5]:.2f}")
+        print(f"LIMITE DE CRÉDITO: R${user[6]:.2f}")
+        input("PRESSIONE UMA TECLA PARA VOLTAR AO MENU...")   
+        clear()
+    return password # retorna False se o usuário errou a senha 3 vezes
+
+def bankStatement(): # mostra o extrato bancário
+    print("MACK BANK – EXTRATO DA CONTA")
+    
+    getAccount()
+    print(f"NOME DO CLIENTE: {user[1]}")
+    password = getPassword()
+
+    if password:
+        print(f"LIMITE DE CRÉDITO: {user[6]}")
+        print(f"SALDO EM CONTA: {user[5]}")
+        print(f"{RED}ÚLTIMAS OPERAÇÕES:{ENDC}")
+        if statement == []: # verifica se houver operações
+            print("NÃO HÁ OPERAÇÕES RECENTES!")
+        else:
+            for state in statement:
+                print(state)
+        input("PRESSIONE UMA TECLA PARA VOLTAR AO MENU...")
+
+    return password # retorna False se o usuário errou a senha 3 vezes
+# função extra
+def credit(): # permite o pagamento de crédito consumido
+    print("MACK BANK – PAGAMENTO DE CRÉDITO")
+    
+    getAccount()
+    print(f"NOME DO CLIENTE: {user[1]}")
+    password = getPassword()
+    
+    if password: # verifica se a senha está correta
+        print(f"SALDO EM CONTA: {user[5]}")
+        print(f"LIMITE DE CRÉDITO: {user[6]}")
+        print(f"CRÉDITO GASTO: {user[7]}")
+        print(f"CRÉDITO DISPONÍVEL: {user[6] - user[7]}")
+        choice = input("DESEJA PAGAR SEU CRÉDITO? (S/N): ") # verifica se o usuário deseja pagar o crédito
+        if choice in "Ss" and user[5] > 0: # verifica se o usuário possui saldo suficiente para pagar o crédito
+            val = float(input("QUANTO DESEJA PAGAR: R$ "))
+            if val <= user[5] and val > 0: # verifica se o usuário possui saldo para pagar o crédito
+                if val >= user[7]: # se o usuário digitar um valor > que a divida, o valor da divida é pago e o restante é desconsiderado
+                    user[5] -= user[7]
+                    statement.append(f"PAGAMENTO DE CRÉDITO: - R${user[7]:.2f}")
+                elif val < user[7]:
+                    user[5] -= val
+                    user[7] -= val
+                    statement.append(f"PAGAMENTO DE CRÉDITO: - R${val:.2f}")
+
+                print("PAGAMENTO REALIZADO COM SUCESSO! SEU CRÉDITO FOI LIBERADO!")
             else:
-                print(
-                    "\nQuantia inserida não pode ser depositada, quantia não depositada será retornada")
-                print("\nPor favor, contate um funcionário responsável")
-                print(f"\nTotal depositado: R${total_deposited}")
-                print(f"\nTotal não depositado: R${not_deposited}")
-            input("Pressione ENTER para continuar...")
-            print("\n")
-        elif optionLogged == "2":  # Saque
+                print("VOCÊ NÃO POSSUI SALDO SUFICIENTE PARA PAGAR O CRÉDITO!")
+        elif choice in "Nn":
+            print("PAGAMENTO CANCELADO!")
+        else:
+            print("PAGAMENTO CANCELADO! VOCÊ NÃO TEM SALDO PARA EFETUAR O PAGAMENTO")
+        input("PRESSIONE UMA TECLA PARA VOLTAR AO MENU...")
+        clear()
+    return password
 
-            withdraw = int(input("\nValor que deseja sacar: "))
-            original_withdraw = withdraw
+blocked = False # bloqueia o acesso ao menu caso o usuário erre a senha 3 vezes
 
-            if withdraw > users[activeUser]["dinheiro"]:
-                print(
-                    "\nVocê não possui saldo suficiente, se desejar pode fazer um empréstimo")
-                input("Pressione ENTER para continuar...")
-                print("\n")
-            else:
-                while withdraw > 0:
-                    if withdraw >= 200 and money["200"] > 0:
-                        money["200"] -= 1
-                        users[activeUser]["dinheiro"] -= 200
-                        withdraw -= 200
-                        bank_notes -= 1
-                    elif withdraw >= 100 and money["100"] > 0:
-                        money["100"] -= 1
-                        users[activeUser]["dinheiro"] -= 100
-                        withdraw -= 100
-                        bank_notes -= 1
-                    elif withdraw >= 50 and money["50"] > 0:
-                        money["50"] -= 1
-                        users[activeUser]["dinheiro"] -= 50
-                        withdraw -= 50
-                        bank_notes -= 1
-                    elif withdraw >= 20 and money["20"] > 0:
-                        money["20"] -= 1
-                        users[activeUser]["dinheiro"] -= 20
-                        withdraw -= 20
-                        bank_notes -= 1
-                    elif withdraw >= 10 and money["10"] > 0:
-                        money["10"] -= 1
-                        users[activeUser]["dinheiro"] -= 10
-                        withdraw -= 10
-                        bank_notes -= 1
-                    elif withdraw >= 5 and money["5"] > 0:
-                        money["5"] -= 1
-                        users[activeUser]["dinheiro"] -= 5
-                        withdraw -= 5
-                        bank_notes -= 1
-                    elif withdraw >= 2 and money["2"] > 0:
-                        money["2"] -= 1
-                        users[activeUser]["dinheiro"] -= 2
-                        withdraw -= 2
-                        bank_notes -= 1
-                    else:
-                        print("\nO caixa não possui essa quantidade de notas")
-                        print(
-                            f"Somente {original_withdraw - withdraw} reais foram sacados")
-                        print("Por favor, contate um funcionário responsável")
-                        input("Pressione ENTER para continuar...")
-                        print("\n")
-                        break
-        elif optionLogged == "3":  # Saldo
-            print("\nSeu saldo é de R$", users[activeUser]["dinheiro"])
-            input("Pressione ENTER para continuar...")
-            print("\n")
-        elif optionLogged == "4":  # Transferência
-            target = int(
-                input("\nDigite o código do usuário que deseja transferir: "))
-            if target > len(users):
-                print("\nUsuário não encontrado")
-                input("Pressione ENTER para continuar...")
-                print("\n")
-            elif target == activeUser:
-                print("\nVocê não pode transferir para si mesmo")
-            else:
-                confirm = input(
-                    f"Você deseja mesmo transferir para {users[target]['nome']}?(S/N): ").lower().strip()
-                if confirm == "s":
-                    transferred_money = int(
-                        input("\nDigite o valor que deseja transferir: "))
-                    if transferred_money > users[activeUser]["dinheiro"]:
-                        print("\nVocê não possui saldo suficiente")
-                        input("Pressione ENTER para continuar...")
-                        print("\n")
-                    else:
-                        users[activeUser]["dinheiro"] -= transferred_money
-                        users[target]["dinheiro"] += transferred_money
-                        print(
-                            f"\nTransferência realizada com sucesso, {users[target]['nome']} recebeu R${transferred_money}")
-                elif confirm == "n":
-                    print("\nTransferência cancelada")
-                else:
-                    print("\nOpção inválida, transferência cancelada")
+while True: # programa principal
+    
+    print("**Bem vindo ao caixa eletrônico**", end="\n\n")
+    print("(1) CADASTRAR CONTA CORRENTE")
+    print("(2) DEPOSITAR")
+    print("(3) SACAR")
+    print("(4) CONSULTAR SALDO")
+    print("(5) CONSULTAR EXTRATO")
+    print("(6) VER CRÉDITO") # nova funcionalidade
+    print("(7) FINALIZAR")
 
-        elif optionLogged == "5":  # Empréstimo
-
-            loan = int(input("\nQual o valor do empréstimo? "))
-            original_loan = loan
-            if loan > MAX_LOAN:
-                print("\nO valor do empréstimo não pode ser superior a R$", MAX_LOAN)
-            elif users[activeUser]["dinheiro"] != 0:
-                print("Você ainda possui saldo:",
-                      users[activeUser]["dinheiro"], "considere sacá-lo antes de fazer um empréstimo")
-                input("Pressione ENTER para continuar...")
-                print("\n")
-            elif users[activeUser]["dinheiro"] <= -1000:
-                print(
-                    "\nVocê não pode fazer um empréstimo, seu limite de crédito foi atingido")
-            else:
-                while loan > 0:
-                    if loan >= 200 and money["200"] > 0:
-                        money["200"] -= 1
-                        users[activeUser]["dinheiro"] -= 200
-                        loan -= 200
-                        bank_notes -= 1
-                    elif loan >= 100 and money["100"] > 0:
-                        money["100"] -= 1
-                        users[activeUser]["dinheiro"] -= 100
-                        loan -= 100
-                        bank_notes -= 1
-                    elif loan >= 50 and money["50"] > 0:
-                        money["50"] -= 1
-                        users[activeUser]["dinheiro"] -= 50
-                        loan -= 50
-                        bank_notes -= 1
-                    elif loan >= 20 and money["20"] > 0:
-                        money["20"] -= 1
-                        users[activeUser]["dinheiro"] -= 20
-                        loan -= 20
-                        bank_notes -= 1
-                    elif loan >= 10 and money["10"] > 0:
-                        money["10"] -= 1
-                        users[activeUser]["dinheiro"] -= 10
-                        loan -= 10
-                        bank_notes -= 1
-                    elif loan >= 5 and money["5"] > 0:
-                        money["5"] -= 1
-                        users[activeUser]["dinheiro"] -= 5
-                        loan -= 5
-                        bank_notes -= 1
-                    elif loan >= 2 and money["2"] > 0:
-                        money["2"] -= 1
-                        users[activeUser]["dinheiro"] -= 2
-                        loan -= 2
-                        bank_notes -= 1
-                    else:
-                        print("\nO caixa não possui essa quantidade de notas")
-                        print(
-                            f"Somente {original_loan - loan} reais foram sacados")
-                        print("Por favor, contate um funcionário responsável")
-                        input("Pressione ENTER para continuar...")
-                        print("\n")
-                        break
-        elif optionLogged == "8":  # Sair do perfil
-            isLogged = False
-            activeUser = -1
-            print("\nLogout realizado com sucesso")
-            input("Pressione ENTER para continuar...")
-            print("\n")
-        elif optionLogged == "9":  # Sair
-            break
+    option = input("Digite sua opção: ")
+    clear()
+    
+    if option == "7":  # Sair
+        clear()
+        print("MACK BANK – SOBRE")
+        print("Este programa foi desenvolvido por:")
+        print("Richard barbosa Sanches")
+        break
+    elif user[0] == 0: # verifica se o usuário já está cadastrado
+        if option != "1": # impede o acesso a outros menus caso o usuário não esteja cadastrado
+            print("VOCÊ NÃO POSSUI UMA CONTA!")
+        else:  # Cadastro de conta
+            accountRegister()
+    elif option == "2":  # Depositar
+        deposit()
+    elif blocked: # verifica se a conta foi bloqueada
+        clear()
+        print("CONTA BLOQUEADA!")
+    elif option == "3":  # Sacar
+        blocked = not withdraw()
+    elif option == "4":  # Saldo
+        blocked = not balance()
+    elif option == "5":  # Extrato
+        blocked = not bankStatement()
+    elif option == "6": # crédito
+        blocked = not credit()

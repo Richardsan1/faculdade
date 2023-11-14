@@ -1,22 +1,11 @@
-# • Elabore um simples jogo de corrida com 5 tartarugas seguindo as definições
-# abaixo:
-# • Cada tartaruga deve possuir uma cor diferente
-# • A velocidade de movimentação de cada tartaruga deve ser aleatória, com valores no intervalo
-# de 1 a 10 pixels
-# • O jogo deve solicitar ao usuário uma cor de tartaruga na qual ele deseja apostar
-# • Defina um ciclo x para executar a corrida, quando a tartaruga tocar a chegada, verifique se o
-# usuário acertou, exibindo na tela a mensagem “Parabéns! Você acertou.”, caso o usuário tenha
-# errado o palpite, apresenta na tela a mensagem “Poxa vida! Você errou”.
-
 import turtle
 import random as r
-from time import sleep
 
 def Turtlefactory(color, posy):
     objTurtle = turtle.Turtle()
     objTurtle.hideturtle()
     objTurtle.shape("turtle")
-    objTurtle.speed(1)
+    objTurtle.speed(0)
     objTurtle.color(color)
     objTurtle.penup()
     objTurtle.sety(posy)
@@ -27,26 +16,15 @@ def Turtlefactory(color, posy):
     return objTurtle
 
 turtles = [
-    Turtlefactory("#F00", 0),
-    Turtlefactory("#0F0", 20),
-    Turtlefactory("#00F", 40),
-    Turtlefactory("#FF0", 60),
-    Turtlefactory("#0FF", 80),
+    Turtlefactory("red", 0),
+    Turtlefactory("green", 20),
+    Turtlefactory("blue", 40),
+    Turtlefactory("yellow", 60),
+    Turtlefactory("cyan", 80),
 ]
-print("cores: vermelho, verde, azul, amarelo, ciano")
+print("cores: red, green, blue, yellow, cyan")
 
 choice = input("escolha a tartaruga que deseja apostar: ")
-
-if choice == "vermelho":
-    choice = "#F00"
-elif choice == "verde":
-    choice = "#0F0"
-elif choice == "azul":
-    choice = "#00F"
-elif choice == "amarelo":
-    choice = "#FF0"
-else:
-    choice = "#0FF"
 
 endGame = False
 victory = False
@@ -57,7 +35,7 @@ while True:
     for t in turtles:
         MovRandom = r.randint(1, 10)
         t.forward(MovRandom)
-        if t.pos()[0] == 250:
+        if t.pos()[0] >= 250:
             endGame = True
             if t.color()[0] == choice:
                 victory = True
@@ -68,4 +46,4 @@ if victory:
 else:
     print("Poxa vida! Você errou.")
 
-sleep(20)
+input("Aperte enter para sair...")
