@@ -1,3 +1,6 @@
+# Reynaldo Panella - 42306868
+# Richard Sanches - 32385374
+# Santiago Guevara - 42333067
 from os import system, name
 import random as r
 
@@ -181,6 +184,7 @@ def bankStatement(): # mostra o extrato bancário
             for state in statement:
                 print(state)
         input("PRESSIONE UMA TECLA PARA VOLTAR AO MENU...")
+        clear()
 
     return password # retorna False se o usuário errou a senha 3 vezes
 # função extra
@@ -229,7 +233,7 @@ while True: # programa principal
     print("(3) SACAR")
     print("(4) CONSULTAR SALDO")
     print("(5) CONSULTAR EXTRATO")
-    print("(6) VER CRÉDITO") # nova funcionalidade
+    print("(6) PAGAR CRÉDITO") # nova funcionalidade
     print("(7) FINALIZAR")
 
     option = input("Digite sua opção: ")
@@ -239,7 +243,9 @@ while True: # programa principal
         clear()
         print("MACK BANK – SOBRE")
         print("Este programa foi desenvolvido por:")
-        print("Richard barbosa Sanches")
+        print("Reynaldo Panella")
+        print("Richard Barbosa Sanches")
+        print("Santiago Guevara")
         break
     elif user[0] == 0: # verifica se o usuário já está cadastrado
         if option != "1": # impede o acesso a outros menus caso o usuário não esteja cadastrado
