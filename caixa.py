@@ -1,6 +1,7 @@
 # Reynaldo Panella - 42306868
 # Richard Sanches - 32385374
 # Santiago Guevara - 42333067
+
 from os import system, name
 import random as r
 import getpass as gp
@@ -82,14 +83,23 @@ def accountRegister(): # cria a conta do usuário
             break
         else:
             print(RED, "SALDO INVÁLIDO! DIGITE UM VALOR MAIOR OU IGUAL A R$1000.00", ENDC, sep="")
-    user[6] = float(input("LIMITE DE CRÉDITO: R$"))
+    
+    while True: # verifica se o saldo inicial é válido
+        user[6] = float(input("LIMITE DE CRÉDITO: R$"))
+        if user[6] > 0:
+            break
+        else:
+            print(RED, "VALOR DE CRÉDITO INVÁLIDO! DIGITE UM VALOR MAIOR QUE ZERO!", ENDC, sep="")
 
     while True: # verifica se a senha é igual a senha de confirmação
         user[2] = gp.getpass("SENHA..........: ")
-        password_ = gp.getpass("REPITA A SENHA...: ")
-        if password_ == user[2]:
-            break
-        print(RED, "AS SENHAS NÃO COINCIDEM!", ENDC, sep="")
+        if len(user[2]) == 6 :
+            password_ = gp.getpass("REPITA A SENHA...: ")
+            if password_ == user[2]:
+                break
+            print(RED, "AS SENHAS NÃO COINCIDEM!", ENDC, sep="")
+        else:
+            print(RED, "A SENHA PRECISA TER SEIS CARACTERES!", ENDC, sep="")
     
     input(f"{BLUE}CADASTRO REALIZADO! PRESSIONE UMA TECLA PARA VOLTAR AO MENU...{ENDC}")
     clear()
@@ -122,7 +132,7 @@ def withdraw(): # saca dinheiro da conta
     
     password = getPassword()
 
-    while True and password:
+    while password:
         withdrawValue = float(input("VALOR DO SAQUE: R$"))
         
         if withdrawValue > 0: # permite o saque se ele for válido
@@ -135,7 +145,7 @@ def withdraw(): # saca dinheiro da conta
                 break
             elif user[5] + user[6] - user[7] >= withdrawValue: # permite o saque caso o usuário tenha saldo suficiente no crédito, retirando o possivel do saldo e depois descontando do limitem
                 print(LIGHT_RED, "VOCÊ ESTÁ USANDO O SEU LIMITE DE CRÉDITO!", ENDC, sep="")
-                
+
                 if user[5] > 0: # verifica se o usuário possui saldo na conta
                     withdrawValue -= user[5]
                     statement.append(f"SAQUE: - R${user[5]:.2f}")
@@ -161,21 +171,21 @@ def withdraw(): # saca dinheiro da conta
 
 def balance(): # mostra o saldo da conta
     print(HEADER, "MACK BANK – CONSULTA SALDO", ENDC, sep="")
-    
+
     getAccount()
-    
-    print(f"NOME DO CLIENTE: {user[1]}")        
+
+    print(f"NOME DO CLIENTE: {user[1]}")
     password = getPassword()
     if password:
         print(f"SALDO EM CONTA: R${user[5]:.2f}")
         print(f"LIMITE DE CRÉDITO: R${user[6]:.2f}")
-        input(f"{BLUE}PRESSIONE UMA TECLA PARA VOLTAR AO MENU...{ENDC}")   
+        input(f"{BLUE}PRESSIONE UMA TECLA PARA VOLTAR AO MENU...{ENDC}")
         clear()
     return password # retorna False se o usuário errou a senha 3 vezes
 
 def bankStatement(): # mostra o extrato bancário
     print(HEADER, "MACK BANK – EXTRATO DA CONTA", ENDC, sep="")
-    
+
     getAccount()
     print(f"NOME DO CLIENTE: {user[1]}")
     password = getPassword()
@@ -196,11 +206,11 @@ def bankStatement(): # mostra o extrato bancário
 # função extra
 def credit(): # permite o pagamento de crédito consumido
     print(HEADER, "MACK BANK – PAGAMENTO DE CRÉDITO", ENDC, sep="")
-    
+
     getAccount()
     print(f"NOME DO CLIENTE: {user[1]}")
     password = getPassword()
-    
+
     if password: # verifica se a senha está correta
         print(f"SALDO EM CONTA: {user[5]}")
         print(f"LIMITE DE CRÉDITO: {user[6]}")
@@ -232,7 +242,7 @@ def credit(): # permite o pagamento de crédito consumido
 blocked = False # bloqueia o acesso ao menu caso o usuário erre a senha 3 vezes
 clear()
 while True: # programa principal
-    
+
     print(HEADER, "BEM-VINDO AO CAIXA ELETRÔNICO", ENDC, end="\n\n", sep="")
     print("(1) CADASTRAR CONTA CORRENTE")
     print("(2) DEPOSITAR")
@@ -244,7 +254,7 @@ while True: # programa principal
 
     option = input("Digite sua opção: ")
     clear()
-    
+
     if option == "7":  # Sair
         clear()
         print(HEADER, "MACK BANK – SOBRE", ENDC, sep="")
@@ -256,9 +266,9 @@ while True: # programa principal
     elif user[0] == 0: # verifica se o usuário ja possui conta
         if option == "1": # verifica se ele escolheu uma opção possível
             accountRegister()
-        else: 
+        else:
             print(RED, "CRIE UMA CONTA ANTES DE TENTAR ACESSAR QUALQUER MENU!", ENDC, sep="")
-    else:    
+    else:
         if option == "1":
             print(RED, "CONTA JÁ REGISTRADA", ENDC, sep="")
         elif option == "2":  # Depositar
