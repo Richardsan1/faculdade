@@ -19,7 +19,7 @@ void gerar_vetor(int v[], int n) {
 int busca_linear (int v[], int n, int e, int *cont) {
   printf("debug");
   for (int i=0; i<n; i++) {
-    cont++;
+    (*cont)++;
     if(v[i] == e) {
       return i;
     }
@@ -53,6 +53,7 @@ int main() {
       printf("## Posicao em que o elemento foi encontrado: %d\n\n", indice);
       printf("## Contador: %d\n\n", cont);
       printf("\n## Fim!\n");
+      cont = 0;
     }
   }
 }
