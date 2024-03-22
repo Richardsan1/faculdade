@@ -6,6 +6,7 @@
 #include "strCartela.h"
 #include "cartela.h"
 #include "table.h"
+
 int CARTEL_NUMBERS[50] = {1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32, 33, 34, 35, 36, 37, 38, 39, 40, 41, 42, 43, 44, 45, 46, 47, 48, 49, 50};
 int CARTEL_SIZE = 50;
 
@@ -92,8 +93,13 @@ int main() {
                 
                 FILE *file;
                 fopen_s(&file, "vencedores.txt", "a");
-                fprintf(file, "%s - ", name);
-                fprintf(file, "%lld\n", time(NULL));
+                fprintf(file, "%s | ", name);
+                time_t t = time(NULL);
+                struct tm tm;
+                localtime_s(&tm, &t);
+
+
+                fprintf(file, "%02d-%02d-%04d\n", tm.tm_mday, tm.tm_mon + 1, tm.tm_year + 1900);
                 fclose(file);
                 
                 break;
