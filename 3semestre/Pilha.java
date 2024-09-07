@@ -1,37 +1,40 @@
 public class Pilha {
-    private final int[] elementos;
+    private final String[] items;
     private int top;
-    private final int capacidade;
+    private final int capacity;
 
-    public Pilha(int capacidade) {
-        this.capacidade = capacidade;
-        this.elementos = new int[capacidade];
+    public Pilha(int capacity) {
+        this.capacity = capacity;
+        this.items = new String[capacity];
         this.top = -1;
     }
 
-    public void push(int elemento) {
-        if (this.top < this.capacidade - 1) {
+    public void push(String elemento) {
+        if (this.top < this.capacity - 1) {
             this.top++;
-            this.elementos[this.top] = elemento;
+            this.items[this.top] = elemento;
         }
     }
 
-    public int pop() {
+    public String pop() {
         if (this.top != -1) {
-            int elemento = this.elementos[this.top];
+            String elemento = this.items[this.top];
             this.top--;
             return elemento;
         }
         
-        return -1;
+        return null;
     }
 
-    public int getTop() {
+    public String topElement() {
         if (this.top != -1) {
-            return this.elementos[this.top];
+            return this.items[this.top];
         }
         
-        return -1;
+        return null;
+    }
+    public int getTop() {
+        return this.top;
     }
 
     public boolean isEmpty() {
@@ -39,7 +42,7 @@ public class Pilha {
     }
 
     public boolean isFull() {
-        return this.top == this.capacidade - 1;
+        return this.top == this.capacity - 1;
     }
 
     public int size() {
