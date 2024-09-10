@@ -23,6 +23,9 @@ public class Calculadora {
             if (null != expression) {
                 switch (expression) {
                     case "VARS" -> {
+                        if (variables.length == 0) {
+                            System.out.println("Sem variáveis definidas!");
+                        }
                         for (int i = 0; i < variables.length; i++) {
                             if (variables[i] != 0) {
                                 System.out.println((char) (i + 65) + " = " + variables[i]);
@@ -109,36 +112,45 @@ public class Calculadora {
     }
     
     public static String tranformExpression(String exp, Pilha valueStack) {
-        String out = "";
+        StringBuilder out = new StringBuilder();
         for (String elem : exp.split("")) {
             if (elem.matches("[A-Z]")) {
-                out = out.concat(elem);
-            } else if (elem.matches("[+\\-*/(]")) {
-                if (valueStack.topElement() != null){
-                    if ((valueStack.topElement().equals("*") || valueStack.topElement().equals("/"))&& !elem.equals("(")) {
-                        out = out.concat(valueStack.pop());
-                    }
+                out.append(elem);
+            } 
+            else if (elem.matches("[+\\-*/(]")) {
+                while (!valueStack.isEmpty() && precedence(elem.charAt(0)) <= precedence(valueStack.topElement().charAt(0))) {
+                    out.append(valueStack.pop());
                 }
                 valueStack.push(elem);
                 
-            } else if (elem.equals(")")) {
+            } 
+            else if (elem.equals(")")) {
                 while (!valueStack.topElement().equals("(")) {
-                    out = out.concat(valueStack.pop());
+                    out.append(valueStack.pop());
                 }
                 valueStack.pop();
             }
         }
         while (!valueStack.isEmpty()) {
-            out = out.concat(valueStack.pop());
+            out.append(valueStack.pop());
         }
-        return out;
+        
+        return out.toString();
     }
 
     public static int calculateExpression(String exp) {
-        for (String elem : exp.split("")) {
+        // for (String elem : exp.split("")) {
             
-        }
+        // }
         return 0;
+    }
+
+    public static int precedence(char c) {
+        return switch (c) {
+            case '+', '-' -> 1;
+            case '*', '/' -> 2;
+            default -> -1;
+        };
     }
 }
 
