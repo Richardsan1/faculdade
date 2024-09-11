@@ -2,12 +2,18 @@ import java.util.Scanner;
 
 // participantes:
 // 1. Richard Barbosa sanches - 10420179
-// 2. Juan - 1042----
+// 2. Juan Nacif - 1042----
+
+// referências: 
+// https://www.w3schools.com/java/ref_string_concat.asp
+// https://regex-generator.olafneumann.org/
 
 public class Calculadora {
     public static void main(String[] args) {
         Scanner scanner = new Scanner(System.in);
         System.out.println("Bem vindo a calculadora!");
+        helper();
+
         Pilha expStack = new Pilha(50);
         Fila recQueue = new Fila(10);
         int[] variables = new int[26];
@@ -118,6 +124,14 @@ public class Calculadora {
                     }
                     System.out.print("\033[H\033[2J");
                     System.out.flush();
+                    continue;
+                }
+                case "HELP" -> {
+                    if (rec){
+                        System.out.println("Comando inválido na gravação!");
+                        continue;
+                    }
+                    helper();
                     continue;
                 }
                 default -> {
@@ -248,8 +262,18 @@ public class Calculadora {
             default -> -1;
         };
     }
+    public static void helper(){
+        System.out.println("===================================================================");
+        System.out.println("1. Digite uma expressão matemática ou de atribuição de variável;");
+        System.out.println("2. Digite 'VARS' para ver as variáveis;");
+        System.out.println("3. Digite 'RESET' para resetar as variáveis;");
+        System.out.println("4. Digite 'REC' para gravar comandos;");
+        System.out.println("5. Digite 'STOP' para parar de gravar comandos;");
+        System.out.println("6. Digite 'ERASE' para apagar comandos gravados;");
+        System.out.println("7. Digite 'PLAY' para executar comandos gravados;");
+        System.out.println("8. Digite 'CLEAN' para limpar a tela;");
+        System.out.println("9. Digite 'HELP' para ver os comandos disponíveis;");
+        System.out.println("10. Digite 'EXIT' para sair;");
+        System.out.println("===================================================================");
+    }
 }
-
-
-// refs: https://www.w3schools.com/java/ref_string_concat.asp
-//       https://regex-generator.olafneumann.org/
