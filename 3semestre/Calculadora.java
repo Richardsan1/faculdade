@@ -16,82 +16,100 @@ public class Calculadora {
 
         OUTER: 
         while (true) {
-            System.out.print("digite sua expressão ou um comando: ");
+            System.out.print("> ");
             String expression = scanner.nextLine();
             expression = expression.toUpperCase().replaceAll("\\s", "");
 
-            if (null != expression) {
-                switch (expression) {
-                    case "VARS" -> {
-                        if (variables.length == 0) {
-                            System.out.println("Sem variáveis definidas!");
-                        }
-                        for (int i = 0; i < variables.length; i++) {
-                            if (variables[i] != 0) {
-                                System.out.println((char) (i + 65) + " = " + variables[i]);
-                            }
-                        }
+            switch (expression) {
+                case "VARS" -> {
+                    if (rec){
+                        System.err.println("Comando inválido na gravação!");
                         continue;
                     }
-                    case "RESET" -> {
-                        variables = new int[26];
-                        continue;
-                    }
-                    case "REC" -> {
-                        if (rec){
-                            System.err.println("Comando inválido!");
-                        } else {
-                            rec = true;
-                        }
-                        continue;
-                    }
-                    case "STOP" -> {
-                        if (rec){
-                            rec = false;
-                        } else {
-                            System.err.println("Comando inválido!");
-                        }
-                        continue;
-                    }
-                    case "PLAY" -> {
-                        while (true) {
-                            if (recQueue.isEmpty()) {
-                                break;
-                            }
-                            System.out.println(recQueue.dequeue());
+                    int count = 0;
+                    for (int i = 0; i < variables.length; i++) {
+                        if (variables[i] != 0) {
+                            System.out.println((char) (i + 65) + " = " + variables[i]);
+                            count++;
                         }
                     }
-                    case "ERASE" -> {
+                    if (count == 0) {
+                        System.out.println("Sem variáveis definidas!");
+                    }
+                    continue;
+                }
+                case "RESET" -> {
+                    variables = new int[26];
+                    System.out.println("Variáveis resetadas!");
+                    continue;
+                }
+                case "REC" -> {
+                    if (rec){
+                        System.err.println("Comando inválido na gravação!");
+                    } else {
                         recQueue = new Fila(10);
-                        continue;
+                        rec = true;
+                        System.err.println("Gravação de comandos ativada!(0/10)");
                     }
-                    case "EXIT" -> {
-                        break OUTER;
+                    continue;
+                }
+                case "STOP" -> {
+                    if (rec){
+                        rec = false;
+                        System.err.println("Gravação de comandos desativada!");
+                    } else {
+                        System.err.println("Comando inválido!");
                     }
-                    default -> {
-                        // verifica se o comando é uma expressão de atribuir valor a variavel
-                        if (expression.matches("[A-Z]=[0-9]+")) {
-                            variables[expression.charAt(0) - 65] = Integer.parseInt(expression.split("=")[1]);
+                    continue;
+                }
+                case "PLAY" -> {
+                    while (true) {
+                        if (recQueue.isEmpty()) {
+                            recQueue.resetFront();
+                            break;
                         }
-                        // verifica se o comando é uma expressão matemática
-                        else if (expression.matches("^[A-Z+\\-*/^()]+$") && validateExpression(expression)) {
-                            String transformedExp = tranformExpression(expression, expStack);
-                            System.out.println("transformedExp: "+transformedExp);
-                            try {
-                                System.out.println("Resultado: "+calculateExpression(transformedExp, variables));
-                            } catch (Exception e) {
-                                System.err.println(e.getMessage());
-                            }
-                        } else {
-                            System.out.println("Comando inválido!");
-                        }
+                        System.err.println(recQueue.dequeue());
                     }
                 }
-            } else {
-                System.out.println("Comando inválido!");
+                case "ERASE" -> {
+                    if (rec){
+                        System.err.println("Comando inválido na gravação!");
+                    }
+                    recQueue = new Fila(10);
+                    System.out.println("Comandos apagados!");
+                    continue;
+                }
+                case "EXIT" -> {
+                    break OUTER;
+                }
+                case "CLEAN" -> {
+                    if (rec){
+                        System.err.println("Erro: Comando inválido na gravação!");
+                    }
+                    System.out.print("\033[H\033[2J");
+                    System.out.flush();
+                    continue;
+                }
+                default -> {
+                    // verifica se o comando é uma expressão de atribuir valor a variavel
+                    if (expression.matches("[A-Z]=[0-9]+")) {
+                        variables[expression.charAt(0) - 65] = Integer.parseInt(expression.split("=")[1]);
+                        System.out.println(expression.charAt(0) + " = " + variables[expression.charAt(0) - 65]);
+                    }
+                    // verifica se o comando é uma expressão matemática
+                    else if (expression.matches("^[A-Z+\\-*/^()]+$") && validateExpression(expression)) {
+                        String transformedExp = tranformExpression(expression, expStack);
+                        try {
+                            System.out.println("Resultado: "+calculateExpression(transformedExp, variables));
+                        } catch (Exception e) {
+                            System.err.println(e.getMessage());
+                        }
+                    } else {
+                        System.out.println("Erro: Comando inválido!");
+                    }
+                }
             }
         }
-
     }
     
     public static boolean validateExpression(String exp) {
@@ -151,9 +169,10 @@ public class Calculadora {
             else if (elem.matches("[+\\-*/]")) {
                 int a;
                 if (valueStack.topElement().matches("[A-Z]")) {
-                    a = vars[valueStack.pop().charAt(0) - 65];
+                    String letter = valueStack.pop();
+                    a = vars[letter.charAt(0) - 65];
                     if (a == 0){
-                        throw new Exception("Variável não definida!");
+                        throw new Exception("Erro: Variável "+ letter +" não definida!");
                     }
                 } else {
                     a = Integer.parseInt(valueStack.pop());
@@ -161,9 +180,10 @@ public class Calculadora {
 
                 int b;
                 if (valueStack.topElement().matches("[A-Z]")) {
-                    b = vars[valueStack.pop().charAt(0) - 65];
+                    String letter = valueStack.pop();
+                    b = vars[letter.charAt(0) - 65];
                     if (b == 0){
-                        throw new Exception("Variável não definida!");
+                        throw new Exception("Erro: Variável "+ letter +" não definida!");
                     }
                 } else {
                     b = Integer.parseInt(valueStack.pop());

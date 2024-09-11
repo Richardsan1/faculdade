@@ -47,4 +47,8 @@ public class Fila {
     public int size() {
         return this.end - this.front + 1;
     }
+
+    public int resetFront() {
+        return this.front = 0;
+    }
 }
