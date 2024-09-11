@@ -13,12 +13,33 @@ public class Calculadora {
         int[] variables = new int[26];
 
         boolean rec = false;
+        boolean play = false;
 
         OUTER: 
         while (true) {
-            System.out.print("> ");
-            String expression = scanner.nextLine();
-            expression = expression.toUpperCase().replaceAll("\\s", "");
+            String expression;
+            if (rec){
+                if (recQueue.isFull()){
+                    rec = false;
+                    System.err.println("Fila Cheia, Gravação de comandos desativada!");
+                } else {
+                    System.out.println("Gravando: "+recQueue.size()+"/10");
+                }
+            }
+            if (play){
+                expression = recQueue.dequeue();
+                if (expression == null){
+                    play = false;
+                    recQueue.resetFront();
+                    System.err.println("Fila Vazia, Execução de comandos finalizada!");
+                    continue;
+                }
+                System.out.println(expression);
+            } else {
+                System.out.print("> ");
+                expression = scanner.nextLine();
+                expression = expression.toUpperCase().replaceAll("\\s", "");
+            }
 
             switch (expression) {
                 case "VARS" -> {
@@ -39,6 +60,10 @@ public class Calculadora {
                     continue;
                 }
                 case "RESET" -> {
+                    if (rec){
+                        recQueue.enqueue(expression);
+                        continue;
+                    }
                     variables = new int[26];
                     System.out.println("Variáveis resetadas!");
                     continue;
@@ -49,7 +74,7 @@ public class Calculadora {
                     } else {
                         recQueue = new Fila(10);
                         rec = true;
-                        System.err.println("Gravação de comandos ativada!(0/10)");
+                        System.err.println("Gravação de comandos ativada!");
                     }
                     continue;
                 }
@@ -63,17 +88,22 @@ public class Calculadora {
                     continue;
                 }
                 case "PLAY" -> {
-                    while (true) {
-                        if (recQueue.isEmpty()) {
-                            recQueue.resetFront();
-                            break;
-                        }
-                        System.err.println(recQueue.dequeue());
+                    if (rec){
+                        System.err.println("Comando inválido na gravação!");
+                        continue;
                     }
+                    if (recQueue.isEmpty()){
+                        System.err.println("Erro: Fila Vazia, Nada para executar!");
+                        continue;
+                    }
+                    play = true;
+                    System.err.println("Executando comandos gravados!");
+                    continue;
                 }
                 case "ERASE" -> {
                     if (rec){
                         System.err.println("Comando inválido na gravação!");
+                        continue;
                     }
                     recQueue = new Fila(10);
                     System.out.println("Comandos apagados!");
@@ -93,11 +123,22 @@ public class Calculadora {
                 default -> {
                     // verifica se o comando é uma expressão de atribuir valor a variavel
                     if (expression.matches("[A-Z]=[0-9]+")) {
+                        if (rec){
+                            recQueue.enqueue(expression);
+                            continue;
+                        }
                         variables[expression.charAt(0) - 65] = Integer.parseInt(expression.split("=")[1]);
+                        if (play){
+                            continue;
+                        }
                         System.out.println(expression.charAt(0) + " = " + variables[expression.charAt(0) - 65]);
                     }
                     // verifica se o comando é uma expressão matemática
                     else if (expression.matches("^[A-Z+\\-*/^()]+$") && validateExpression(expression)) {
+                        if (rec){
+                            recQueue.enqueue(expression);
+                            continue;
+                        }
                         String transformedExp = tranformExpression(expression, expStack);
                         try {
                             System.out.println("Resultado: "+calculateExpression(transformedExp, variables));

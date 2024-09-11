@@ -1,39 +1,38 @@
 public class Fila {
-    private final int[] elementos;
+    private final String[] elementos;
     private int front;
     private int end;
     private final int capacidade;
 
     public Fila(int capacidade) {
         this.capacidade = capacidade;
-        this.elementos = new int[capacidade];
+        this.elementos = new String[capacidade];
         this.front = 0;
         this.end = -1;
     }
 
-    public void enqueue(int elemento) {
+    public void enqueue(String elemento) {
         if (this.end < this.capacidade - 1) {
             this.end++;
             this.elementos[this.end] = elemento;
         }
     }
 
-    public int dequeue() {
+    public String dequeue() {
         if (this.front <= this.end) {
-            int elemento = this.elementos[this.front];
+            String elemento = this.elementos[this.front];
             this.front++;
             return elemento;
         }
-        
-        return -1;
+        return null;
     }
 
-    public int getFront() {
+    public String getFront() {
         if (this.front <= this.end) {
             return this.elementos[this.front];
         }
         
-        return -1;
+        return null;
     }
 
     public boolean isEmpty() {
