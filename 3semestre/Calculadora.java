@@ -76,8 +76,12 @@ public class Calculadora {
                         // verifica se o comando é uma expressão matemática
                         else if (expression.matches("^[A-Z+\\-*/^()]+$") && validateExpression(expression)) {
                             String transformedExp = tranformExpression(expression, expStack);
-                            System.out.println(transformedExp);
-                            System.out.println(calculateExpression(transformedExp));
+                            System.out.println("transformedExp: "+transformedExp);
+                            try {
+                                System.out.println("Resultado: "+calculateExpression(transformedExp, variables));
+                            } catch (Exception e) {
+                                System.err.println(e.getMessage());
+                            }
                         } else {
                             System.out.println("Comando inválido!");
                         }
@@ -138,11 +142,42 @@ public class Calculadora {
         return out.toString();
     }
 
-    public static int calculateExpression(String exp) {
-        // for (String elem : exp.split("")) {
-            
-        // }
-        return 0;
+    public static int calculateExpression(String exp, int[] vars) throws Exception {
+        Pilha valueStack = new Pilha(10);
+        for (String elem : exp.split("")) {
+            if (elem.matches("[A-Z]")){
+                valueStack.push(elem);
+            } 
+            else if (elem.matches("[+\\-*/]")) {
+                int a;
+                if (valueStack.topElement().matches("[A-Z]")) {
+                    a = vars[valueStack.pop().charAt(0) - 65];
+                    if (a == 0){
+                        throw new Exception("Variável não definida!");
+                    }
+                } else {
+                    a = Integer.parseInt(valueStack.pop());
+                }
+
+                int b;
+                if (valueStack.topElement().matches("[A-Z]")) {
+                    b = vars[valueStack.pop().charAt(0) - 65];
+                    if (b == 0){
+                        throw new Exception("Variável não definida!");
+                    }
+                } else {
+                    b = Integer.parseInt(valueStack.pop());
+                }
+                
+                switch (elem) {
+                    case "+" -> valueStack.push(String.valueOf(a + b));
+                    case "-" -> valueStack.push(String.valueOf(b - a));
+                    case "*" -> valueStack.push(String.valueOf(a * b));
+                    case "/" -> valueStack.push(String.valueOf(b / a));
+                }
+            }
+        }
+        return Integer.parseInt(valueStack.pop());
     }
 
     public static int precedence(char c) {
