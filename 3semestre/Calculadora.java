@@ -27,9 +27,9 @@ public class Calculadora {
             if (rec){
                 if (recQueue.isFull()){
                     rec = false;
-                    System.err.println("Fila Cheia, Gravação de comandos desativada!");
+                    System.out.println("INFO: Fila Cheia, Gravação de comandos desativada!");
                 } else {
-                    System.out.println("Gravando: "+recQueue.size()+"/10");
+                    System.out.println("INFO: Gravando: "+recQueue.size()+"/10");
                 }
             }
             if (play){
@@ -37,7 +37,7 @@ public class Calculadora {
                 if (expression == null){
                     play = false;
                     recQueue.resetFront();
-                    System.err.println("Fila Vazia, Execução de comandos finalizada!");
+                    System.err.println("ERRO: Fila Vazia, Execução de comandos finalizada!");
                     continue;
                 }
                 System.out.println(expression);
@@ -50,7 +50,7 @@ public class Calculadora {
             switch (expression) {
                 case "VARS" -> {
                     if (rec){
-                        System.err.println("Comando inválido na gravação!");
+                        System.err.println("ERRO: Comando inválido na gravação!");
                         continue;
                     }
                     int count = 0;
@@ -76,51 +76,51 @@ public class Calculadora {
                 }
                 case "REC" -> {
                     if (rec){
-                        System.err.println("Comando inválido na gravação!");
+                        System.err.println("ERRO: Comando inválido na gravação!");
                     } else {
                         recQueue = new Fila(10);
                         rec = true;
-                        System.err.println("Gravação de comandos ativada!");
+                        System.err.println("INFO: Gravação de comandos ativada!");
                     }
                     continue;
                 }
                 case "STOP" -> {
                     if (rec){
                         rec = false;
-                        System.err.println("Gravação de comandos desativada!");
+                        System.err.println("INFO: Gravação de comandos desativada!");
                     } else {
-                        System.err.println("Comando inválido!");
+                        System.err.println("ERRO: Comando inválido!");
                     }
                     continue;
                 }
                 case "PLAY" -> {
                     if (rec){
-                        System.err.println("Comando inválido na gravação!");
+                        System.err.println("ERRO: Comando inválido na gravação!");
                         continue;
                     }
                     if (recQueue.isEmpty()){
-                        System.err.println("Erro: Fila Vazia, Nada para executar!");
+                        System.err.println("ERRO: Fila Vazia, Nada para executar!");
                         continue;
                     }
                     play = true;
-                    System.err.println("Executando comandos gravados!");
+                    System.err.println("INFO: Executando comandos gravados!");
                     continue;
                 }
                 case "ERASE" -> {
                     if (rec){
-                        System.err.println("Comando inválido na gravação!");
+                        System.err.println("ERRO: Comando inválido na gravação!");
                         continue;
                     }
                     recQueue = new Fila(10);
-                    System.out.println("Comandos apagados!");
+                    System.out.println("INFO: Comandos apagados!");
                     continue;
                 }
                 case "EXIT" -> {
                     break OUTER;
                 }
-                case "CLEAN" -> {
+                case "CLEAR" -> {
                     if (rec){
-                        System.err.println("Erro: Comando inválido na gravação!");
+                        System.err.println("ERRO: Comando inválido na gravação!");
                     }
                     System.out.print("\033[H\033[2J");
                     System.out.flush();
@@ -155,12 +155,12 @@ public class Calculadora {
                         }
                         String transformedExp = tranformExpression(expression, expStack);
                         try {
-                            System.out.println("Resultado: "+calculateExpression(transformedExp, variables));
+                            System.out.println("RESULTADO: "+calculateExpression(transformedExp, variables));
                         } catch (Exception e) {
                             System.err.println(e.getMessage());
                         }
                     } else {
-                        System.out.println("Erro: Comando inválido!");
+                        System.out.println("ERRO: Comando inválido!");
                     }
                 }
             }
@@ -227,7 +227,7 @@ public class Calculadora {
                     String letter = valueStack.pop();
                     a = vars[letter.charAt(0) - 65];
                     if (a == 0){
-                        throw new Exception("Erro: Variável "+ letter +" não definida!");
+                        throw new Exception("ERRO: Variável "+ letter +" não definida!");
                     }
                 } else {
                     a = Integer.parseInt(valueStack.pop());
@@ -238,7 +238,7 @@ public class Calculadora {
                     String letter = valueStack.pop();
                     b = vars[letter.charAt(0) - 65];
                     if (b == 0){
-                        throw new Exception("Erro: Variável "+ letter +" não definida!");
+                        throw new Exception("ERRO: Variável "+ letter +" não definida!");
                     }
                 } else {
                     b = Integer.parseInt(valueStack.pop());
@@ -262,6 +262,7 @@ public class Calculadora {
             default -> -1;
         };
     }
+    
     public static void helper(){
         System.out.println("===================================================================");
         System.out.println("1. Digite uma expressão matemática ou de atribuição de variável;");
@@ -271,7 +272,7 @@ public class Calculadora {
         System.out.println("5. Digite 'STOP' para parar de gravar comandos;");
         System.out.println("6. Digite 'ERASE' para apagar comandos gravados;");
         System.out.println("7. Digite 'PLAY' para executar comandos gravados;");
-        System.out.println("8. Digite 'CLEAN' para limpar a tela;");
+        System.out.println("8. Digite 'CLEAR' para limpar a tela;");
         System.out.println("9. Digite 'HELP' para ver os comandos disponíveis;");
         System.out.println("10. Digite 'EXIT' para sair;");
         System.out.println("===================================================================");
