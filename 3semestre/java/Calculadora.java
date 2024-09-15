@@ -2,7 +2,7 @@ import java.util.Scanner;
 
 // participantes:
 // 1. Richard Barbosa sanches - 10420179
-// 2. Juan Nacif - 1042----
+// 2. Juan Nacif - 10428509
 
 // referências: 
 // https://www.w3schools.com/java/ref_string_concat.asp
@@ -99,7 +99,7 @@ public class Calculadora {
                         continue;
                     }
                     if (recQueue.isEmpty()){
-                        System.err.println("ERRO: Fila Vazia, Nada para executar!");
+                        System.err.println("ERRO: Não há gravação para ser reproduzida!");
                         continue;
                     }
                     play = true;
