@@ -3,6 +3,7 @@ import java.util.Scanner;
 // participantes:
 // 1. Richard Barbosa sanches - 10420179
 // 2. Juan Nacif - 10428509
+// 2. Eric Itallo Barros Pereira de Lima - 10428565
 
 // referências: 
 // https://www.w3schools.com/java/ref_string_concat.asp
@@ -14,9 +15,8 @@ public class Calculadora {
         System.out.println("Bem vindo a calculadora!");
         helper();
 
-        Pilha expStack = new Pilha(50);
         Fila recQueue = new Fila(10);
-        int[] variables = new int[26];
+        float[] variables = new float[26];
 
         boolean rec = false;
         boolean play = false;
@@ -37,7 +37,7 @@ public class Calculadora {
                 if (expression == null){
                     play = false;
                     recQueue.resetFront();
-                    System.err.println("ERRO: Fila Vazia, Execução de comandos finalizada!");
+                    System.out.println("INFO: Fila Vazia, Execução de comandos finalizada!");
                     continue;
                 }
                 System.out.println(expression);
@@ -70,7 +70,7 @@ public class Calculadora {
                         recQueue.enqueue(expression);
                         continue;
                     }
-                    variables = new int[26];
+                    variables = new float[26];
                     System.out.println("Variáveis resetadas!");
                     continue;
                 }
@@ -80,14 +80,14 @@ public class Calculadora {
                     } else {
                         recQueue = new Fila(10);
                         rec = true;
-                        System.err.println("INFO: Gravação de comandos ativada!");
+                        System.out.println("INFO: Gravação de comandos ativada!");
                     }
                     continue;
                 }
                 case "STOP" -> {
                     if (rec){
                         rec = false;
-                        System.err.println("INFO: Gravação de comandos desativada!");
+                        System.out.println("INFO: Gravação de comandos desativada!");
                     } else {
                         System.err.println("ERRO: Comando inválido!");
                     }
@@ -103,7 +103,7 @@ public class Calculadora {
                         continue;
                     }
                     play = true;
-                    System.err.println("INFO: Executando comandos gravados!");
+                    System.out.println("INFO: Executando comandos gravados!");
                     continue;
                 }
                 case "ERASE" -> {
@@ -136,12 +136,12 @@ public class Calculadora {
                 }
                 default -> {
                     // verifica se o comando é uma expressão de atribuir valor a variavel
-                    if (expression.matches("[A-Z]=[0-9]+")) {
+                    if (expression.matches("[A-Za-z]=[0-9]+(\\.[0-9]+)?")) {
                         if (rec){
                             recQueue.enqueue(expression);
                             continue;
                         }
-                        variables[expression.charAt(0) - 65] = Integer.parseInt(expression.split("=")[1]);
+                        variables[expression.charAt(0) - 65] = Float.parseFloat(expression.split("=")[1]);
                         if (play){
                             continue;
                         }
@@ -153,7 +153,7 @@ public class Calculadora {
                             recQueue.enqueue(expression);
                             continue;
                         }
-                        String transformedExp = tranformExpression(expression, expStack);
+                        String transformedExp = tranformExpression(expression);
                         try {
                             System.out.println("RESULTADO: "+calculateExpression(transformedExp, variables));
                         } catch (Exception e) {
@@ -188,8 +188,9 @@ public class Calculadora {
         return !((operatorCount != operandCount-1 || operandCount <= 1) || openParenthesis != 0);
     }
     
-    public static String tranformExpression(String exp, Pilha valueStack) {
+    public static String tranformExpression(String exp) {
         StringBuilder out = new StringBuilder();
+        Pilha valueStack = new Pilha(50);
         for (String elem : exp.split("")) {
             if (elem.matches("[A-Z]")) {
                 out.append(elem);
@@ -215,14 +216,14 @@ public class Calculadora {
         return out.toString();
     }
 
-    public static int calculateExpression(String exp, int[] vars) throws Exception {
+    public static float calculateExpression(String exp, float[] vars) throws Exception {
         Pilha valueStack = new Pilha(10);
         for (String elem : exp.split("")) {
             if (elem.matches("[A-Z]")){
                 valueStack.push(elem);
             } 
             else if (elem.matches("[+\\-*/]")) {
-                int a;
+                float a;
                 if (valueStack.topElement().matches("[A-Z]")) {
                     String letter = valueStack.pop();
                     a = vars[letter.charAt(0) - 65];
@@ -230,10 +231,10 @@ public class Calculadora {
                         throw new Exception("ERRO: Variável "+ letter +" não definida!");
                     }
                 } else {
-                    a = Integer.parseInt(valueStack.pop());
+                    a = Float.parseFloat(valueStack.pop());
                 }
 
-                int b;
+                float b;
                 if (valueStack.topElement().matches("[A-Z]")) {
                     String letter = valueStack.pop();
                     b = vars[letter.charAt(0) - 65];
@@ -241,7 +242,7 @@ public class Calculadora {
                         throw new Exception("ERRO: Variável "+ letter +" não definida!");
                     }
                 } else {
-                    b = Integer.parseInt(valueStack.pop());
+                    b = Float.parseFloat(valueStack.pop());
                 }
                 
                 switch (elem) {
@@ -252,7 +253,7 @@ public class Calculadora {
                 }
             }
         }
-        return Integer.parseInt(valueStack.pop());
+        return Float.parseFloat(valueStack.pop());
     }
 
     public static int precedence(char c) {
