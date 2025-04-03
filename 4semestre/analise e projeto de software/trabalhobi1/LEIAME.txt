@@ -1,0 +1,10 @@
+Nomes:
+Juan Nacif - 10428509
+Karina da Cunha Alves - 10420180
+Richard Barbosa Sanches - 10420179
+
+Técnica de projeto utilizada:
+A técnica utilizada foi o backtracking, que explora todas as possibilidades para distribuir os arquivos entre os pendrives, garantindo que nenhuma combinação válida seja ignorada.
+
+A técnica utilizada sempre apresenta o melhor resultado? Justifique:
+Sim, essa técnica sempre encontra o melhor resultado, pois verifica todas as combinações possíveis. No entanto, pode ser lenta em casos com muitos arquivos, já que o número de combinações cresce exponencialmente. Mesmo assim, é uma abordagem confiável para garantir a solução correta.
