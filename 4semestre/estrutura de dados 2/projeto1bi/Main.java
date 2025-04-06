@@ -1,3 +1,11 @@
+/**
+ * Richard Barbosa Sanches - 10420179
+ * Júlia Vitória Bomfim do Nascimento - 10425604
+ * William Saran dos Santos Junior - 10420128
+ *
+ * Referências: slides da aula teórica e enunciado do projeto
+ */
+
 import estruturas.ArvoreDeOperacoes;
 
 import java.text.DecimalFormat;
