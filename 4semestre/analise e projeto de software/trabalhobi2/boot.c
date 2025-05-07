@@ -13,15 +13,15 @@ typedef struct Item {
 typedef struct Mapa {
     char *nome;
     float capacidade;
-    Item *itens;       // agora é ponteiro
-    int qtdItens;      // quantidade real
+    Item *itens;       
+    int qtdItens;      
     char *regra;
 } Mapa;
 
 void printItens(Item *itens, int qtdItens) {
 
     for (int i = 0; i < qtdItens; i++) {
-        if (itens[i].nome == NULL) continue; // segurança para itens vazios
+        if (itens[i].nome == NULL) continue; 
 
         printf("Item %d:\n", i + 1);
         printf("  Nome: %s\n", itens[i].nome);
@@ -41,16 +41,15 @@ Mapa *boot(FILE *file) {
     int mapaIndex = -1;
     int itemIndex = 0;
 
-    // Passo 1: ler todas as linhas e armazenar temporariamente
     char *linhas[500];
     int numLinhas = 0;
     while (fgets(linha, sizeof(linha), file)) {
-        linhas[numLinhas] = strdup(linha); // armazena cópia da linha
+        linhas[numLinhas] = strdup(linha); 
         numLinhas++;
     }
 
-    // Passo 2: primeira passada — contar itens por mapa
-    int itemCounts[4] = {0}; // máximo de 4 mapas
+
+    int itemCounts[4] = {0};
 
     int currentMap = -1;
     for (int i = 0; i < numLinhas; i++) {
@@ -65,7 +64,6 @@ Mapa *boot(FILE *file) {
         free(linhaTrim);
     }
 
-    // Passo 3: segunda passada — preencher dados
     mapaIndex = -1;
     itemIndex = 0;
     for (int i = 0; i < numLinhas; i++) {
@@ -78,15 +76,15 @@ Mapa *boot(FILE *file) {
             itemIndex = 0;
 
             mapas[mapaIndex].nome = strdup(strtok(NULL, ":"));
+            mapas[mapaIndex].nome[strlen(mapas[mapaIndex].nome)-1] = '\0';
             mapas[mapaIndex].qtdItens = itemCounts[mapaIndex];
             mapas[mapaIndex].itens = malloc(sizeof(Item) * mapas[mapaIndex].qtdItens);
         } else if (strcmp(token, "CAPACIDADE") == 0) {
             mapas[mapaIndex].capacidade = atof(strtok(NULL, ":"));
         } else if (strcmp(token, "REGRA") == 0) {
             char *regra = strtok(NULL, ":");
-            while (*regra == ' ') regra++; // remove espaços
+            while (*regra == ' ') regra++; 
 
-            // remove espaços e '\r' finais
             char *end = regra + strlen(regra) - 1;
             while (end > regra && (*end == ' ' || *end == '\r')) {
                 *end = '\0';
@@ -105,14 +103,14 @@ Mapa *boot(FILE *file) {
             item->valor = atof(strtok(NULL, ","));
 
             char *tipo = strtok(NULL, ",");
-            while (*tipo == ' ') tipo++; // remove espaços
+            while (*tipo == ' ') tipo++; 
             item->tipo = strdup(tipo);
 
             item->fracionado = 0;
             itemIndex++;
         }
 
-        free(linhas[i]); // libera memória da linha
+        free(linhas[i]);
     }
 
     return mapas;

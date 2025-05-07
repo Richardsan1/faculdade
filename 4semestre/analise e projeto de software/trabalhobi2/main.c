@@ -28,8 +28,8 @@ int main(int argc, char *argv[]) {
         int size = 0;
         Item * escolha = runMap(&mapas[i], &size);
         float lucro = 0.0;
-        // salvar em um arquivo o resultado
-        fprintf(out, "---FASE: %s---\n", mapas[i].nome);
+
+        fprintf(out, "--- FASE: %s ---\n", mapas[i].nome);
         fprintf(out, "Capacidade da mochila: %.2f\n", mapas[i].capacidade);
         fprintf(out, "Regra aplicada: %s\n\n", mapas[i].regra);
         for (int j = 0; j < size; j++) {

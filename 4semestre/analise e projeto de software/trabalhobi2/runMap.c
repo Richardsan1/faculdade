@@ -30,7 +30,7 @@ Item * maximizeProfit(Mapa * mapa, void(* chooseFunc)(float, Mapa *, Item *, int
         }
     }
 
-    // Selecionar os itens para maximizar o lucro
+    // Selecionar os itens para maximizar o lucro de acordo com a regra
     chooseFunc(capacidadeRestante, mapa, itens, size);
     return itens;
 }
@@ -39,21 +39,19 @@ void selectItems(float capacidadeRestante, Mapa * mapa, Item * itens, int * size
     int n = mapa->qtdItens;
     for (int i = 0; i < n; i++) {
         if (capacidadeRestante <= 0) {
-            break; // Mochila cheia
+            break; 
         }
 
         if (capacidadeRestante >= mapa->itens[i].peso) {
-            // Pega o item inteiro
             itens[i] = mapa->itens[i];
             capacidadeRestante -= mapa->itens[i].peso;
             (*size)++;
         } else {
-            // Pega apenas uma fração do item
             itens[i] = mapa->itens[i];
             itens[i].peso = capacidadeRestante;
             itens[i].valor = (mapa->itens[i].valor / mapa->itens[i].peso) * capacidadeRestante;
-            itens[i].fracionado = 1; // Indica que o item foi fracionado
-            capacidadeRestante = 0; // Mochila cheia após pegar a fração
+            itens[i].fracionado = 1; 
+            capacidadeRestante = 0; 
             (*size)++;
         }
     }
@@ -86,6 +84,31 @@ void selectItemsTec(float capacidadeRestante, Mapa * mapa, Item * itens, int * s
     }
 }
 
+void selectThreeItems(float capacidadeRestante, Mapa * mapa, Item * itens, int * size) {
+    int n = mapa->qtdItens;
+    int count = 0;
+    for (int i = 0; i < n; i++) {
+        if (capacidadeRestante <= 0 || count >= 3) {
+            break;
+        }
+
+        if (capacidadeRestante >= mapa->itens[i].peso) {
+            itens[i] = mapa->itens[i];
+            capacidadeRestante -= mapa->itens[i].peso;
+            (*size)++;
+            count++; 
+        } else {
+            itens[i] = mapa->itens[i];
+            itens[i].peso = capacidadeRestante;
+            itens[i].valor = (mapa->itens[i].valor / mapa->itens[i].peso) * capacidadeRestante;
+            itens[i].fracionado = 1; 
+            capacidadeRestante = 0; 
+            (*size)++;
+            count++; 
+        }
+    }
+}
+
 Item * runMap(Mapa * mapa, int * size) {
     Item * itensEscolhidos = NULL;
     char * regra = mapa->regra;
@@ -106,7 +129,7 @@ Item * runMap(Mapa * mapa, int * size) {
         }
         itensEscolhidos = maximizeProfit(mapa, selectItems, size);
     } else if(strcmp(regra, "TRES_MELHORES_VALOR_PESO") == 0){
-        itensEscolhidos = maximizeProfit(mapa, selectItems, size);
+        itensEscolhidos = maximizeProfit(mapa, selectThreeItems, size);
     } else {
         printf("Regra não reconhecida.\n");
     }
