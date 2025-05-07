@@ -1,10 +1,11 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include "./boot.c"
+#include "./runMap.c"
 
 int main(int argc, char *argv[]) {
-    if (argc != 2) {
-        fprintf(stderr, "Erro: sem arquivo de entrada\n");
+    if (argc != 3) {
+        fprintf(stderr, "Erro: sem arquivo de entrada ou saida\n");
         return 1;
     }
 
@@ -21,6 +22,27 @@ int main(int argc, char *argv[]) {
         fprintf(stderr, "Erro: não foi possível carregar os mapas\n");
         return 1;
     }
+    
+    FILE *out = fopen(argv[2], "w");
+    for (int i = 0; i < 4; i++) {
+        int size = 0;
+        Item * escolha = runMap(&mapas[i], &size);
+        float lucro = 0.0;
+        // salvar em um arquivo o resultado
+        fprintf(out, "---FASE: %s---\n", mapas[i].nome);
+        fprintf(out, "Capacidade da mochila: %.2f\n", mapas[i].capacidade);
+        fprintf(out, "Regra aplicada: %s\n\n", mapas[i].regra);
+        for (int j = 0; j < size; j++) {
+            if (escolha[j].fracionado) {
+                // Pegou (<inteiro/fracionario>) <nome do item> (<peso> kg, R$ <valor do item>)
+                fprintf(out, "Pegou (fracionado) %s (%.2f kg, R$%.2f)\n", escolha[j].nome, escolha[j].peso, escolha[j].valor);
+            } else {
+                fprintf(out, "Pegou (inteiro) %s (%.2f kg, R$%.2f)\n", escolha[j].nome, escolha[j].peso, escolha[j].valor);
+            }
+        }
+        fprintf(out, "\n\n");
+    }
+
 
     return 0;
 }

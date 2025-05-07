@@ -1,0 +1,39 @@
+---FASE:  Floresta Encantada---
+Capacidade da mochila: 5.00
+Regra aplicada: MAGICOS_VALOR_DOBRADO
+
+Pegou (inteiro) Pocao da Cura (0.50 kg, R$80.00)
+Pegou (inteiro) Capa Invisivel (1.00 kg, R$120.00)
+Pegou (inteiro) Espada Rustica (2.00 kg, R$150.00)
+Pegou (fracionado) Pedaço de Madeira (1.50 kg, R$30.00)
+
+
+---FASE:  Ruinas Perdidas---
+Capacidade da mochila: 4.00
+Regra aplicada: TECNOLOGICOS_INTEIROS
+
+Pegou (inteiro) Gerador Antigo (2.50 kg, R$300.00)
+Pegou (inteiro) Sensor de Movimento (1.00 kg, R$120.00)
+Pegou (inteiro) Manual de Operacao (0.50 kg, R$60.00)
+
+
+---FASE:  Montanhas Geladas---
+Capacidade da mochila: 3.50
+Regra aplicada: SOBREVIVENCIA_DESVALORIZADA
+
+Pegou (inteiro) Kit de Primeiros Socorros (0.50 kg, R$70.00)
+Pegou (inteiro) Garrafa de Agua (0.50 kg, R$50.00)
+Pegou (inteiro) Cobertor Termico (1.00 kg, R$80.00)
+Pegou (fracionado) Barraca Quebrada (1.50 kg, R$75.00)
+
+
+---FASE:  Templo Subterraneo---
+Capacidade da mochila: 6.00
+Regra aplicada: TRES_MELHORES_VALOR_PESO
+
+Pegou (inteiro) Moeda Antiga (0.50 kg, R$90.00)
+Pegou (inteiro) Mascara Dourada (2.00 kg, R$300.00)
+Pegou (inteiro) Livro Sagrado (1.50 kg, R$200.00)
+Pegou (fracionado) Estatua Quebrada (2.00 kg, R$140.00)
+
+
