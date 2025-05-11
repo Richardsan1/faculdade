@@ -123,7 +123,7 @@ Item * runMap(Mapa * mapa, int * size) {
         itensEscolhidos = maximizeProfit(mapa, selectItemsTec, size);
     } else if(strcmp(regra, "SOBREVIVENCIA_DESVALORIZADA") == 0){
         for (int i = 0; i <mapa->qtdItens; i++) {
-            if (strcmp(mapa->itens[i].tipo, "tecnologico") == 0) {
+            if (strcmp(mapa->itens[i].tipo, "sobrevivencia") == 0) {
                 mapa->itens[i].valor *= 0.8;
             }
         }
