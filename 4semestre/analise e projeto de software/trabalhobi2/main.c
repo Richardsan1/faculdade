@@ -33,6 +33,7 @@ int main(int argc, char *argv[]) {
         fprintf(out, "Capacidade da mochila: %.2f\n", mapas[i].capacidade);
         fprintf(out, "Regra aplicada: %s\n\n", mapas[i].regra);
         for (int j = 0; j < size; j++) {
+            lucro += escolha[j].valor;
             if (escolha[j].fracionado) {
                 // Pegou (<inteiro/fracionario>) <nome do item> (<peso> kg, R$ <valor do item>)
                 fprintf(out, "Pegou (fracionado) %s (%.2f kg, R$%.2f)\n", escolha[j].nome, escolha[j].peso, escolha[j].valor);
@@ -40,7 +41,7 @@ int main(int argc, char *argv[]) {
                 fprintf(out, "Pegou (inteiro) %s (%.2f kg, R$%.2f)\n", escolha[j].nome, escolha[j].peso, escolha[j].valor);
             }
         }
-        fprintf(out, "\n\n");
+        fprintf(out, "Lucro da fase: R$%.2f\n\n", lucro);
     }
 
 
