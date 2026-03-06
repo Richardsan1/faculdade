@@ -17,6 +17,31 @@ def buyTicket():
             return True
         return False
 
+def sla(client, address):
+    try:
+        while True:
+            data = client.recv(MAX_PAYLOAD).decode("utf-8")
+            if not data:
+                break
+            req = data.upper().strip()
+            print (f"Receive: {req}")
+            if req == "CONSULTAR":
+                client.send(f"Estoque atual: {tickets}".encode())
+            elif req == "COMPRAR":
+                status = buyTicket()
+                if status:
+                    client.send(f"Compra realizada. Estoque restante: {tickets}".encode())
+                else:
+                    client.send("ERRO: Produto esgotado".encode())
+            else:
+                client.send("ERRO: Comando inválido".encode())
+    except ConnectionResetError:
+        pass
+    finally:
+        client.close()
+        print(f"Cliente desconectado: {address}")
+
+
 def main():
     global tickets
     sock = socket.socket(socket.AF_INET,  socket.SOCK_STREAM)
@@ -39,26 +64,7 @@ def main():
     while True: 
         client, address = sock.accept()
         print(f"Connected Client: {address}")
-        while True:
-            try:
-                data = client.recv(MAX_PAYLOAD).decode("utf-8")
-                if not data:
-                    break
-                req = data.upper().strip()
-                print (f"Receive: {req}")
-                if req == "CONSULTAR":
-                    client.send(f"Estoque atual: {tickets}".encode())
-                elif req == "COMPRAR":
-                    status = buyTicket()
-                    if status:
-                        client.send(f"Compra realizada. Estoque restante: {tickets}".encode())
-                    else:
-                        client.send("ERRO: Produto esgotado".encode())
-                else:
-                    client.send("ERRO: Comando inválido".encode())
-            except ConnectionResetError:
-                break
-        client.close()
-        print(f"Cliente desconectado: {address}")
+        if client:
+            threading.Thread(target=sla, args=(client, address)).start()
 
 main()
