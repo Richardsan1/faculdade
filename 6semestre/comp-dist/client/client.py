@@ -3,6 +3,7 @@ import os
 from pathlib import Path
 import time
 import random
+from datetime import datetime as dt
 
 HOST = '127.0.0.1'  
 PORT = 12346        
@@ -14,6 +15,7 @@ def log(user, message):
     with open(f"{pt}/{user}.log", "a") as file:
         file.write(message+ "\n")
         file.close()
+
 def client(mode, user):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
         try:
@@ -22,7 +24,7 @@ def client(mode, user):
                 log(user, f"Conectado a {HOST}:{PORT}")
             else:
                 print(f"Conectado a {HOST}:{PORT}")
-        except:
+        except Exception:
             if mode == "BOT":
                 log(user, f"ERRO: Não foi possível se conectar ao host {HOST}")   
             else: 
@@ -33,25 +35,36 @@ def client(mode, user):
                 msg = input("Digite sua mensagem: ")
                 if msg.strip().upper() == "SAIR":
                     client_socket.close()
+                    if mode == "BOT":
+                        log(user, "Desconectado do servidor")
                     break
-                client_socket.send(msg.encode())
+                client_socket.send(msg.encode("utf-8"))
                 res = client_socket.recv(2048).decode("utf-8")
                 print(res)
         else:
+            interactions = 0
             while True:
-                vl = random.randint(1, 10)
-                if vl < 4:
+                vl = random.randint(10, 20)
+                msg = ""
+                if vl < 14:
                     msg = "CONSULTAR"
-                elif vl < 8:
+                    interactions += 1
+                elif vl < 18:
                     msg = "COMPRAR"
-                elif vl < 10:
+                    interactions += 1
+                elif vl < 20:
                     msg = "SAIR"
                 
                 if msg.strip().upper() == "SAIR":
-                    client_socket.close()
-                    break
-                client_socket.send(msg.encode())
+                    if interactions > 10:
+                        client_socket.close()
+                        log(user, "Desconectado do servidor")
+                        break
+                    else: 
+                        continue
+                client_socket.send(msg.encode("utf-8"))
                 res = client_socket.recv(2048).decode("utf-8")
                 
-                log(user, msg)
+                log(user, f"ENVIADO: {msg}")
+                log(user, F"{dt.now().strftime("%d-%m-%Y %H:%M:%S")} {res  }")
                 time.sleep(vl)
