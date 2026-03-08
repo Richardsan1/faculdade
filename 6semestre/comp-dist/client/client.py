@@ -43,28 +43,26 @@ def client(mode, user):
                 print(res)
         else:
             interactions = 0
-            while True:
-                vl = random.randint(10, 20)
-                msg = ""
-                if vl < 14:
-                    msg = "CONSULTAR"
-                    interactions += 1
-                elif vl < 18:
-                    msg = "COMPRAR"
-                    interactions += 1
-                elif vl < 20:
-                    msg = "SAIR"
-                
-                if msg.strip().upper() == "SAIR":
-                    if interactions > 10:
-                        client_socket.close()
-                        log(user, "Desconectado do servidor")
-                        break
-                    else: 
-                        continue
+            while interactions < 10:
+                rd1 = random.randint(1, 10)
+                msg = "CONSULTAR"
                 client_socket.send(msg.encode("utf-8"))
                 res = client_socket.recv(2048).decode("utf-8")
                 
                 log(user, f"ENVIADO: {msg}")
                 log(user, F"{dt.now().strftime("%d-%m-%Y %H:%M:%S")} {res  }")
-                time.sleep(vl)
+                time.sleep(rd1)
+                
+                rd2 = random.randint(1, 10)
+                msg = "COMPRAR"
+                client_socket.send(msg.encode("utf-8"))
+                res = client_socket.recv(2048).decode("utf-8")
+                
+                log(user, f"ENVIADO: {msg}")
+                log(user, F"{dt.now().strftime("%d-%m-%Y %H:%M:%S")} {res  }")
+                time.sleep(rd2)
+                
+                interactions +=1
+
+            client_socket.close()
+            log(user, "Desconectado do servidor")
