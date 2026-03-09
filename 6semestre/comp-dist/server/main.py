@@ -22,6 +22,9 @@ class TicketServer:
         self.client_count = 0
         self.client_count_lock = threading.Lock()
 
+        self.clients = set()
+        self.clients_lock = threading.Lock()
+
     def set_parameters(self) -> int:
         try:
             max_connections = int(input("Set a max connection pool: "))
@@ -42,24 +45,36 @@ class TicketServer:
             return self.MIN_BACKLOG
 
     def buy_ticket(self) -> bool:
+        sold = False
+        sold_out = False
         with self.tickets_lock:
             if self.tickets > 0:
                 self.tickets -= 1
-                return True
-            return False
+                sold = True
+                if self.tickets == 0:
+                    sold_out = True
+        if sold_out:
+            self.broadcast("AVISO: Tickets esgotados")
+        return sold
 
-    def client_connected(self, address):
+    def client_connected(self, address, client_socket=None):
         with self.client_count_lock:
             self.client_count += 1
             print(f"Client connected: {address}; active connections: {self.client_count}")
+        if client_socket:
+            with self.clients_lock:
+                self.clients.add(client_socket)
 
-    def client_disconnected(self, address):
+    def client_disconnected(self, address, client_socket=None):
         with self.client_count_lock:
             self.client_count -= 1
             print(f"Client disconnected: {address}; active connections: {self.client_count}")
+        if client_socket:
+            with self.clients_lock:
+                self.clients.discard(client_socket)
 
     def handle_client(self, client, address):
-        self.client_connected(address)
+        self.client_connected(address, client_socket=client)
         try:
             while True:
                 data = client.recv(MAX_PAYLOAD)
@@ -82,7 +97,19 @@ class TicketServer:
             pass
         finally:
             client.close()
-            self.client_disconnected(address)
+            self.client_disconnected(address, client_socket=client)
+
+    def broadcast(self, message: str):
+        encoded = message.encode("utf-8")
+        with self.clients_lock:
+            targets = list(self.clients)
+        for sock in targets:
+            try:
+                sock.send(encoded)
+            except Exception:
+                # failed send, remove from set
+                with self.clients_lock:
+                    self.clients.discard(sock)
 
     def run(self):
         backlog = self.set_parameters()

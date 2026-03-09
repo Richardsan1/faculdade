@@ -11,30 +11,32 @@ def log(user, message):
     pt = Path(f"{os.getcwd()}/logs/")
     if not pt.exists():
         os.mkdir(pt)
-    
-    with open(f"{pt}/{user}.log", "a") as file:
-        file.write(message+ "\n")
-        file.close()
+    try:
+        with open(f"{pt}/{user}.log", "a") as file:
+            file.write(message + "\n")
+    except Exception as e:
+        print(f"[{user} log error] {e}: {message}")
 
 def client(mode, user):
     with socket.socket(socket.AF_INET, socket.SOCK_STREAM) as client_socket:
+        if mode == "BOT":
+            log(user, f"{'='*20} INICIANDO {'='*20}")
         try:
             client_socket.connect((HOST, PORT))
             if mode == "BOT":
                 log(user, f"Conectado a {HOST}:{PORT}")
             else:
                 print(f"Conectado a {HOST}:{PORT}")
-        except Exception:
+        except socket.error as ex:
             if mode == "BOT":
-                log(user, f"ERRO: Não foi possível se conectar ao host {HOST}")   
-            else: 
-                print(f"ERRO: Não foi possível se conectar ao host {HOST}")
+                log(user, f"ERRO: Não foi possível se conectar ao host {HOST}: {ex}")
+            else:
+                print(f"ERRO: Não foi possível se conectar ao host {HOST}: {ex}")
             return
         if mode == "USER":
             while True:
                 msg = input("Digite sua mensagem: ")
                 if msg.strip().upper() == "SAIR":
-                    client_socket.close()
                     if mode == "BOT":
                         log(user, "Desconectado do servidor")
                     break
@@ -43,26 +45,38 @@ def client(mode, user):
                 print(res)
         else:
             interactions = 0
-            while interactions < 10:
-                rd1 = random.randint(1, 10)
+            limit = random.randint(10, 20) 
+            while interactions < limit:
                 msg = "CONSULTAR"
                 client_socket.send(msg.encode("utf-8"))
-                res = client_socket.recv(2048).decode("utf-8")
-                
                 log(user, f"ENVIADO: {msg}")
-                log(user, F"{dt.now().strftime("%d-%m-%Y %H:%M:%S")} {res  }")
-                time.sleep(rd1)
+
+                res = client_socket.recv(2048).decode("utf-8")
+                log(user, F"{dt.now().strftime("%d-%m-%Y %H:%M:%S")} {res}")
                 
-                rd2 = random.randint(1, 10)
+                time.sleep(random.randint(5, 10))
+                
                 msg = "COMPRAR"
                 client_socket.send(msg.encode("utf-8"))
                 res = client_socket.recv(2048).decode("utf-8")
                 
                 log(user, f"ENVIADO: {msg}")
-                log(user, F"{dt.now().strftime("%d-%m-%Y %H:%M:%S")} {res  }")
-                time.sleep(rd2)
-                
-                interactions +=1
+                log(user, F"{dt.now().strftime("%d-%m-%Y %H:%M:%S")} {res}")
 
-            client_socket.close()
+                client_socket.settimeout(1.0)
+                try:
+                    while True:
+                        extra = client_socket.recv(2048).decode("utf-8")
+                        if not extra:
+                            break
+                        log(user, f"RECEIVED AFTER COMPRAR: {extra}")
+                except socket.timeout:
+                    pass
+                finally:
+                    client_socket.settimeout(None)
+
+                time.sleep(random.randint(1, 10))
+                
+                interactions += 1
+
             log(user, "Desconectado do servidor")
