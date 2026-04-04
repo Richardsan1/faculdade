@@ -1,0 +1,821 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VR Memory — Centro Digital Imersivo</title>
+    <script src="https://aframe.io/releases/1.4.2/aframe.min.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body { font-family: 'Lato', sans-serif; background: #1a1208; color: #f5e6c8; overflow: hidden; }
+
+        /* SPLASH */
+        #splash { position: fixed; inset: 0; z-index: 9999; background: linear-gradient(160deg, #1a1208 0%, #2a1c0e 50%, #141820 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease; }
+        #splash.hidden { opacity: 0; pointer-events: none; }
+        .splash-logo { font-family: 'Cinzel', serif; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; letter-spacing: 0.12em; color: #d4a843; text-shadow: 0 0 40px rgba(212,168,67,0.5); margin-bottom: 0.3em; }
+        .splash-sub { font-size: 0.85rem; letter-spacing: 0.35em; text-transform: uppercase; color: rgba(245,230,200,0.5); margin-bottom: 3rem; }
+        .splash-deco { width: 120px; height: 2px; background: linear-gradient(90deg, transparent, #d4a843, transparent); margin-bottom: 2.5rem; }
+        .splash-desc { max-width: 420px; text-align: center; font-size: 0.95rem; line-height: 1.7; color: rgba(245,230,200,0.7); margin-bottom: 0.8rem; }
+        .splash-controls { max-width: 420px; text-align: center; font-size: 0.78rem; line-height: 1.8; color: rgba(245,230,200,0.45); margin-bottom: 2rem; }
+        .splash-controls strong { color: rgba(212,168,67,0.7); font-weight: 600; }
+        .btn-enter { font-family: 'Cinzel', serif; font-size: 0.9rem; letter-spacing: 0.2em; padding: 0.9em 2.8em; background: transparent; border: 1px solid #d4a843; color: #d4a843; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; }
+        .btn-enter:hover { background: #d4a843; color: #1a1208; }
+
+        /* HUD */
+        #hud { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
+        .hud-top { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; background: linear-gradient(180deg, rgba(20,15,8,0.92) 0%, transparent 100%); }
+        .hud-brand { font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 600; letter-spacing: 0.15em; color: #d4a843; }
+        .hud-brand span { font-weight: 400; color: rgba(245,230,200,0.6); }
+        .hud-controls { display: flex; gap: 0.75rem; pointer-events: all; align-items: center; }
+        .hud-btn { background: rgba(20,15,8,0.85); border: 1px solid rgba(212,168,67,0.35); color: rgba(245,230,200,0.85); font-size: 0.75rem; letter-spacing: 0.1em; padding: 0.4em 1em; cursor: pointer; transition: all 0.2s; font-family: 'Lato', sans-serif; }
+        .hud-btn:hover { border-color: #d4a843; color: #d4a843; background: rgba(212,168,67,0.1); }
+        .hud-btn.active { background: rgba(212,168,67,0.18); border-color: #d4a843; color: #d4a843; }
+        .hud-bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: center; padding: 1rem; background: linear-gradient(0deg, rgba(20,15,8,0.85) 0%, transparent 100%); }
+        .hud-tip { font-size: 0.72rem; letter-spacing: 0.12em; color: rgba(245,230,200,0.45); text-transform: uppercase; }
+        .hud-tip strong { color: rgba(212,168,67,0.75); font-weight: 400; }
+
+        /* FUSE PROGRESS RING — shown around crosshair when gazing at object */
+        #gaze-ring { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 44px; height: 44px; pointer-events: none; z-index: 91; opacity: 0; transition: opacity 0.1s; }
+        #gaze-ring.active { opacity: 1; }
+        #gaze-ring svg { width: 100%; height: 100%; transform: rotate(-90deg); }
+        #gaze-arc { stroke-dasharray: 113; stroke-dashoffset: 113; transition: stroke-dashoffset 0.05s linear; }
+
+        /* CROSSHAIR */
+        .crosshair { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 14px; height: 14px; pointer-events: none; z-index: 90; }
+        .crosshair::before, .crosshair::after { content:''; position:absolute; background: rgba(255,255,255,0.7); }
+        .crosshair::before { width:100%; height:1px; top:50%; }
+        .crosshair::after  { height:100%; width:1px; left:50%; }
+        .ch-dot { position:absolute; top:50%; left:50%; width:4px; height:4px; border-radius:50%; background:#d4a843; transform:translate(-50%,-50%); }
+
+        /* SEARCH */
+        #search-wrap { position:fixed; inset:0; z-index:500; display:none; align-items:flex-start; justify-content:center; background:rgba(10,8,4,0.78); backdrop-filter:blur(6px); padding-top:110px; }
+        #search-wrap.open { display:flex; }
+        .search-box { width:min(600px,90vw); background:#1e160a; border:1px solid rgba(212,168,67,0.4); box-shadow:0 20px 60px rgba(0,0,0,0.6); }
+        .search-hdr { padding:1.1rem 1.4rem 0.8rem; border-bottom:1px solid rgba(212,168,67,0.12); display:flex; align-items:center; gap:1rem; }
+        #search-input { flex:1; background:none; border:none; outline:none; font-family:'Lato',sans-serif; font-size:1rem; color:#f5e6c8; }
+        #search-input::placeholder { color:rgba(245,230,200,0.3); }
+        .s-close { background:none; border:none; color:rgba(245,230,200,0.4); font-size:1.1rem; cursor:pointer; }
+        .s-close:hover { color:#d4a843; }
+        .s-hint { padding:0.5rem 1.4rem; font-size:0.67rem; letter-spacing:0.15em; text-transform:uppercase; color:rgba(245,230,200,0.28); }
+        #search-results { max-height:380px; overflow-y:auto; }
+        .s-label { padding:0.45rem 1.4rem 0.2rem; font-size:0.62rem; letter-spacing:0.25em; text-transform:uppercase; color:rgba(212,168,67,0.6); border-top:1px solid rgba(212,168,67,0.08); }
+        .s-label:first-child { border-top:none; }
+        .s-row { padding:0.7rem 1.4rem; cursor:pointer; display:flex; align-items:center; gap:0.9rem; transition:background 0.12s; }
+        .s-row:hover { background:rgba(212,168,67,0.07); }
+        .s-icon { width:30px; height:30px; display:flex; align-items:center; justify-content:center; font-size:1rem; flex-shrink:0; }
+        .s-icon.col { background:rgba(212,168,67,0.12); }
+        .s-icon.art { background:rgba(139,100,50,0.2); }
+        .s-name { font-size:0.87rem; color:#f5e6c8; margin-bottom:0.12rem; }
+        .s-sub  { font-size:0.71rem; color:rgba(245,230,200,0.45); }
+        .s-go   { margin-left:auto; font-size:0.64rem; letter-spacing:0.12em; text-transform:uppercase; color:rgba(212,168,67,0.5); flex-shrink:0; }
+        .s-row:hover .s-go { color:#d4a843; }
+        .s-empty { padding:1.5rem; text-align:center; font-size:0.85rem; color:rgba(245,230,200,0.3); }
+
+        /* INFO PANEL */
+        #info-panel { position:fixed; right:0; top:0; bottom:0; width:320px; z-index:200; background:linear-gradient(180deg,#1a1208 0%,#12161e 100%); border-left:1px solid rgba(212,168,67,0.22); transform:translateX(100%); transition:transform 0.38s cubic-bezier(0.16,1,0.3,1); pointer-events:all; overflow-y:auto; display:flex; flex-direction:column; }
+        #info-panel.open { transform:translateX(0); }
+        .p-hdr { padding:1.4rem; border-bottom:1px solid rgba(212,168,67,0.15); display:flex; align-items:flex-start; justify-content:space-between; }
+        .p-tag { font-size:0.63rem; letter-spacing:0.25em; text-transform:uppercase; color:#d4a843; margin-bottom:0.45rem; }
+        .p-title { font-family:'Cinzel',serif; font-size:1.05rem; font-weight:600; color:#f5e6c8; line-height:1.3; }
+        .p-close { background:none; border:none; color:rgba(245,230,200,0.4); font-size:1.1rem; cursor:pointer; padding:0.2rem; flex-shrink:0; }
+        .p-close:hover { color:#d4a843; }
+        .p-body { padding:1.4rem; flex:1; }
+        .p-meta { display:grid; grid-template-columns:1fr 1fr; gap:0.7rem; margin-bottom:1.3rem; }
+        .m-label { font-size:0.59rem; letter-spacing:0.2em; text-transform:uppercase; color:rgba(245,230,200,0.42); margin-bottom:0.18rem; }
+        .m-val   { font-size:0.81rem; color:rgba(245,230,200,0.88); }
+        .p-desc  { font-size:0.84rem; line-height:1.75; color:rgba(245,230,200,0.66); border-top:1px solid rgba(212,168,67,0.1); padding-top:1rem; margin-bottom:1.4rem; }
+        .p-kws   { display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:1.4rem; }
+        .kw      { font-size:0.63rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.22em 0.7em; border:1px solid rgba(212,168,67,0.25); color:rgba(212,168,67,0.75); }
+        .btn-save { width:100%; padding:0.82em; font-family:'Cinzel',serif; font-size:0.78rem; letter-spacing:0.15em; text-transform:uppercase; background:transparent; border:1px solid #d4a843; color:#d4a843; cursor:pointer; transition:all 0.2s; }
+        .btn-save:hover { background:#d4a843; color:#1a1208; }
+        .btn-save.saved { background:rgba(212,168,67,0.1); color:rgba(212,168,67,0.5); border-color:rgba(212,168,67,0.22); cursor:default; }
+
+        /* COLLECTION PANEL */
+        #coll-panel { position:fixed; left:0; top:0; bottom:0; width:295px; z-index:200; background:#1a1208; border-right:1px solid rgba(212,168,67,0.22); transform:translateX(-100%); transition:transform 0.38s cubic-bezier(0.16,1,0.3,1); pointer-events:all; overflow-y:auto; }
+        #coll-panel.open { transform:translateX(0); }
+        .c-hdr { padding:1.4rem; border-bottom:1px solid rgba(212,168,67,0.15); }
+        .c-title { font-family:'Cinzel',serif; font-size:0.95rem; color:#d4a843; letter-spacing:0.1em; }
+        .c-count { font-size:0.71rem; color:rgba(245,230,200,0.38); margin-top:0.22rem; }
+        #coll-list { padding:0.9rem; }
+        .c-item { padding:0.8rem; border:1px solid rgba(212,168,67,0.14); margin-bottom:0.45rem; cursor:pointer; transition:all 0.18s; }
+        .c-item:hover { border-color:rgba(212,168,67,0.42); background:rgba(212,168,67,0.04); }
+        .c-item-name { font-family:'Cinzel',serif; font-size:0.8rem; color:#f5e6c8; margin-bottom:0.18rem; }
+        .c-item-sub  { font-size:0.69rem; color:rgba(245,230,200,0.38); }
+        .c-empty { padding:2rem 1rem; text-align:center; font-size:0.81rem; color:rgba(245,230,200,0.28); line-height:1.7; }
+
+        /* TOAST */
+        #toast { position:fixed; bottom:5rem; left:50%; transform:translateX(-50%) translateY(18px); background:rgba(212,168,67,0.97); color:#1a1208; font-size:0.79rem; letter-spacing:0.07em; padding:0.72em 1.4em; opacity:0; transition:all 0.28s ease; pointer-events:none; z-index:999; white-space:nowrap; }
+        #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
+
+        /* TELEPORT FLASH */
+        #tp-flash { position:fixed; inset:0; z-index:800; background:#fff; opacity:0; pointer-events:none; transition:opacity 0.1s ease; }
+        #tp-flash.flash { opacity:0.45; }
+
+        .badge { display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:50%; background:#d4a843; color:#1a1208; font-size:0.63rem; font-weight:700; margin-left:0.35rem; vertical-align:middle; }
+    </style>
+</head>
+<body>
+
+<!-- SPLASH -->
+<div id="splash">
+    <div class="splash-logo">VR Memory</div>
+    <div class="splash-sub">Centro Digital Imersivo</div>
+    <div class="splash-deco"></div>
+    <p class="splash-desc">Explore e preserve a memória histórico-cultural de povos indígenas em realidade virtual.</p>
+    <p class="splash-controls">
+        <strong>Mouse</strong> — olhar ao redor &nbsp;·&nbsp; <strong>WASD</strong> — andar<br>
+        <strong>Olhar fixo</strong> no objeto por 1,5s — interagir &nbsp;·&nbsp; <strong>Ctrl+K</strong> — buscar
+    </p>
+    <button class="btn-enter" onclick="enterExperience()">Entrar na Exposição</button>
+</div>
+
+<!-- CROSSHAIR -->
+<div class="crosshair"><div class="ch-dot"></div></div>
+
+<!-- GAZE RING (fuse progress) -->
+<div id="gaze-ring">
+    <svg viewBox="0 0 44 44">
+        <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(212,168,67,0.25)" stroke-width="3"/>
+        <circle id="gaze-arc" cx="22" cy="22" r="18" fill="none" stroke="#d4a843" stroke-width="3" stroke-linecap="round" stroke-dasharray="113" stroke-dashoffset="113"/>
+    </svg>
+</div>
+
+<!-- TELEPORT FLASH -->
+<div id="tp-flash"></div>
+
+<!-- HUD -->
+<div id="hud">
+    <div class="hud-top">
+        <div class="hud-brand">VR Memory <span id="room-label">/ Exposição Marajó</span></div>
+        <div class="hud-controls">
+            <button class="hud-btn" onclick="openSearch()">🔍 Buscar <span style="opacity:.4;font-size:.65em">Ctrl+K</span></button>
+            <button class="hud-btn" id="btn-coll" onclick="toggleColl()">Minha Coleção <span id="badge" class="badge" style="display:none">0</span></button>
+        </div>
+    </div>
+    <div class="hud-bottom">
+        <div class="hud-tip"><strong>Mouse</strong> Olhar &nbsp;·&nbsp; <strong>WASD</strong> Andar &nbsp;·&nbsp; <strong>Olhar fixo 1.5s</strong> Interagir &nbsp;·&nbsp; <strong>Ctrl+K</strong> Buscar</div>
+    </div>
+</div>
+
+<!-- SEARCH -->
+<div id="search-wrap" onclick="overlayClick(event)">
+    <div class="search-box">
+        <div class="search-hdr">
+            <span style="color:#d4a843">🔍</span>
+            <input id="search-input" type="text" placeholder="Buscar coleção ou artefato..." oninput="onSearch(this.value)" autocomplete="off">
+            <button class="s-close" onclick="closeSearch()">✕</button>
+        </div>
+        <div class="s-hint">Digite para filtrar · Enter para ir ao primeiro resultado · Esc para fechar</div>
+        <div id="search-results"></div>
+    </div>
+</div>
+
+<!-- INFO PANEL -->
+<div id="info-panel">
+    <div class="p-hdr">
+        <div><div class="p-tag" id="p-cat"></div><div class="p-title" id="p-name"></div></div>
+        <button class="p-close" onclick="closePanel()">✕</button>
+    </div>
+    <div class="p-body">
+        <div class="p-meta">
+            <div><div class="m-label">Origem</div><div class="m-val" id="p-origin"></div></div>
+            <div><div class="m-label">Período</div><div class="m-val" id="p-period"></div></div>
+            <div><div class="m-label">Tipo</div><div class="m-val">Objeto 3D</div></div>
+            <div><div class="m-label">Coleção</div><div class="m-val" id="p-coll"></div></div>
+        </div>
+        <div class="p-desc" id="p-desc"></div>
+        <div class="p-kws" id="p-kws"></div>
+        <button class="btn-save" id="btn-save" onclick="saveItem()">＋ Salvar na Minha Coleção</button>
+    </div>
+</div>
+
+<!-- COLLECTION PANEL -->
+<div id="coll-panel">
+    <div class="c-hdr"><div class="c-title">Minha Coleção</div><div class="c-count" id="c-count">0 itens</div></div>
+    <div id="coll-list"><div class="c-empty">Nenhum artefato salvo.<br><br>Olhe fixo para um objeto por 1,5 segundo para abrir seu painel.</div></div>
+</div>
+
+<div id="toast"></div>
+
+<!-- ════════════════════════════════════════════════
+     A-FRAME SCENE
+════════════════════════════════════════════════ -->
+<a-scene
+    vr-mode-ui="enabled: true"
+    renderer="antialias: true; colorManagement: true; physicallyCorrectLights: true"
+    fog="type: exponential; color: #3a2a14; density: 0.005"
+    background="color: #3a2a14"
+    cursor="rayOrigin: mouse">
+
+    <a-assets>
+        <img id="floor-tex" src="https://cdn.aframe.io/a-painter/images/floor.jpg" crossorigin="anonymous">
+    </a-assets>
+
+    <!--
+        KEY FIX: camera at y=0, no nested position offset.
+        Teleport moves the camera entity directly — no rig confusion.
+        look-controls WITHOUT pointerLockEnabled so regular mouse clicks work.
+    -->
+    <a-camera id="cam"
+        position="0 1.65 3"
+        look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false"
+        wasd-controls="acceleration: 30">
+        <!--
+            Fuse cursor: fires 'click' on .interativo after 1500ms of gaze.
+            We also keep mouse click via the scene's cursor="rayOrigin: mouse".
+        -->
+        <a-cursor
+            id="cursor"
+            color="#d4a843"
+            opacity="0"
+            fuse="true"
+            fuse-timeout="1500"
+            raycaster="objects: .interativo; far: 16">
+        </a-cursor>
+    </a-camera>
+
+    <!-- ═══════ GLOBAL LIGHTS ═══════ -->
+    <a-light type="ambient"      color="#d4b878" intensity="2.4"></a-light>
+    <a-light type="hemisphere"   color="#ffe8c0" ground-color="#6a4820" intensity="1.3"></a-light>
+    <a-light type="directional"  intensity="2.0" position="5 10 4" color="#fff5e0"></a-light>
+
+    <!-- ═══════ SHARED FLOOR ═══════ -->
+    <a-plane src="#floor-tex" rotation="-90 0 0" width="60" height="70" position="0 0 -20"
+             repeat="18 22" material="color:#7a5c35; roughness:0.8"></a-plane>
+    <a-sky color="#4a3520"></a-sky>
+
+    <!-- ════════════════════════════════════════
+         SALA 1 — ACERVO MARAJÓ  (cam start z=3, room z: 0 to -20)
+    ════════════════════════════════════════ -->
+    <a-light type="point" intensity="5"   position="0  7  -8"  color="#ffe090" distance="26" decay="1.2"></a-light>
+    <a-light type="point" intensity="3"   position="-8 5  -8"  color="#ffcc70" distance="15" decay="1.5"></a-light>
+    <a-light type="point" intensity="3"   position="8  5  -8"  color="#ffcc70" distance="15" decay="1.5"></a-light>
+    <a-light type="point" intensity="2.5" position="0  5  -15" color="#ffd888" distance="13" decay="1.5"></a-light>
+    <a-light type="point" intensity="2"   position="-11 7 -5"  color="#ffe090" distance="10" decay="2"></a-light>
+    <a-light type="point" intensity="2"   position="11  7 -5"  color="#ffe090" distance="10" decay="2"></a-light>
+    <a-light type="point" intensity="2"   position="-11 7 -15" color="#ffe090" distance="10" decay="2"></a-light>
+    <a-light type="point" intensity="2"   position="11  7 -15" color="#ffe090" distance="10" decay="2"></a-light>
+
+    <!-- Walls -->
+    <a-box position="0 4.5 -20"  width="28" height="9" depth="0.4" color="#4a3520"></a-box>
+    <a-box position="-14 4.5 -10" width="0.4" height="9" depth="20" color="#3d2c15"></a-box>
+    <a-box position="14  4.5 -10" width="0.4" height="9" depth="20" color="#3d2c15"></a-box>
+    <a-box position="0   9   -10" width="28" height="0.4" depth="20" color="#2a1c0e"></a-box>
+    <!-- trim -->
+    <a-box position="0 0.05 -20"   width="28" height="0.08" depth="0.5" color="#d4a843" material="emissive:#8a6820;emissiveIntensity:0.7;metalness:0.8"></a-box>
+    <a-box position="-13.8 0.04 -10" width="0.06" height="0.06" depth="20" color="#d4a843" material="emissive:#d4a843;emissiveIntensity:0.9"></a-box>
+    <a-box position="13.8  0.04 -10" width="0.06" height="0.06" depth="20" color="#d4a843" material="emissive:#d4a843;emissiveIntensity:0.9"></a-box>
+    <!-- pillars -->
+    <a-cylinder position="-3.5 4.5  0"  radius="0.22" height="9" color="#5a3f1f"></a-cylinder>
+    <a-cylinder position="3.5  4.5  0"  radius="0.22" height="9" color="#5a3f1f"></a-cylinder>
+    <a-cylinder position="-11  4.5 -5"  radius="0.24" height="9" color="#5a3f1f"></a-cylinder>
+    <a-cylinder position="11   4.5 -5"  radius="0.24" height="9" color="#5a3f1f"></a-cylinder>
+    <a-cylinder position="-11  4.5 -15" radius="0.24" height="9" color="#5a3f1f"></a-cylinder>
+    <a-cylinder position="11   4.5 -15" radius="0.24" height="9" color="#5a3f1f"></a-cylinder>
+
+    <!-- ARTEFATO 1: Urna Funerária -->
+    <a-box position="0 0.75 -8" width="1.4" height="1.5" depth="1.4" color="#4a3218"></a-box>
+    <a-box position="0 1.52 -8" width="1.6" height="0.12" depth="1.6" color="#d4a843" material="metalness:0.7;emissive:#8a6010;emissiveIntensity:0.5"></a-box>
+    <a-entity id="art-urna" class="interativo" position="0 2.35 -8"
+        data-nome="Urna Funerária Marajoara" data-cat="Cerâmica"
+        data-origem="Ilha de Marajó, Pará" data-periodo="400 – 1300 d.C."
+        data-colecao="Acervo Marajó" data-sala="sala1" data-camx="0" data-camz="-5"
+        data-desc="Urna funerária utilizada pelo povo Marajoara para preservar os restos mortais de seus ancestrais. Decorada com padrões geométricos complexos que representavam a cosmovisão indígena, incluindo a serpente e elementos ligados à morte e ao renascimento."
+        data-kws="marajó,cerâmica,ritual,funerário,amazônia">
+        <a-cylinder radius="0.42" height="0.74" color="#a05820" material="roughness:0.65"
+            animation="property:rotation;to:0 360 0;loop:true;dur:13000;easing:linear"></a-cylinder>
+        <a-sphere position="0 0.54 0" radius="0.32" color="#b86830"
+            animation="property:rotation;to:0 360 0;loop:true;dur:13000;easing:linear"></a-sphere>
+        <a-torus position="0 0.14 0" radius="0.43" radius-tubular="0.022" color="#d4a843"
+            material="emissive:#6a4010;emissiveIntensity:0.7"
+            animation="property:rotation;to:0 360 0;loop:true;dur:13000;easing:linear"></a-torus>
+        <a-torus position="0 -0.14 0" radius="0.43" radius-tubular="0.022" color="#d4a843"
+            material="emissive:#6a4010;emissiveIntensity:0.7"
+            animation="property:rotation;to:0 360 0;loop:true;dur:13000;easing:linear"></a-torus>
+    </a-entity>
+    <a-light type="spot" intensity="4" position="0 5.5 -8" rotation="-90 0 0" color="#ffe090" angle="30" penumbra="0.4" distance="6" decay="2"></a-light>
+
+    <!-- ARTEFATO 2: Máscara Tukano -->
+    <a-box position="-7 0.7 -11" width="1.2" height="1.4" depth="1.2" color="#4a3218"></a-box>
+    <a-box position="-7 1.42 -11" width="1.4" height="0.12" depth="1.4" color="#d4a843" material="metalness:0.7;emissive:#8a6010;emissiveIntensity:0.5"></a-box>
+    <a-entity id="art-mascara" class="interativo" position="-7 2.3 -11"
+        data-nome="Máscara Ritual Tukano" data-cat="Arte Ritual"
+        data-origem="Alto Rio Negro, Amazonas" data-periodo="Séc. XVIII – XIX"
+        data-colecao="Acervo Marajó" data-sala="sala1" data-camx="-7" data-camz="-7.5"
+        data-desc="Máscara utilizada em cerimônias de iniciação do povo Tukano. Confeccionada com palha trançada, resinas naturais e pigmentos minerais. Representa entidades espirituais que mediam a comunicação entre o mundo dos vivos e dos ancestrais."
+        data-kws="tukano,ritual,iniciação,amazônia,espiritual">
+        <a-sphere scale="1 1.3 0.6" radius="0.42" color="#c07840" material="roughness:0.8"
+            animation="property:rotation;to:0 360 0;loop:true;dur:18000;easing:linear"></a-sphere>
+        <a-sphere position="0.14 0.13 0.25" radius="0.1" color="#1a0a02"
+            animation="property:rotation;to:0 360 0;loop:true;dur:18000;easing:linear"></a-sphere>
+        <a-sphere position="-0.14 0.13 0.25" radius="0.1" color="#1a0a02"
+            animation="property:rotation;to:0 360 0;loop:true;dur:18000;easing:linear"></a-sphere>
+        <a-cone position="0 0.58 0" radius-bottom="0.4" radius-top="0.05" height="0.7" color="#9b7020"
+            animation="property:rotation;to:0 360 0;loop:true;dur:18000;easing:linear"></a-cone>
+    </a-entity>
+    <a-light type="spot" intensity="3.5" position="-7 5.5 -11" rotation="-90 0 0" color="#ffc060" angle="28" penumbra="0.4" distance="6" decay="2"></a-light>
+
+    <!-- ARTEFATO 3: Vaso Santarém -->
+    <a-box position="7 0.7 -11" width="1.2" height="1.4" depth="1.2" color="#4a3218"></a-box>
+    <a-box position="7 1.42 -11" width="1.4" height="0.12" depth="1.4" color="#d4a843" material="metalness:0.7;emissive:#8a6010;emissiveIntensity:0.5"></a-box>
+    <a-entity id="art-vaso" class="interativo" position="7 2.3 -11"
+        data-nome="Vaso Cariátide Santarém" data-cat="Cerâmica"
+        data-origem="Santarém, Pará" data-periodo="900 – 1600 d.C."
+        data-colecao="Acervo Marajó" data-sala="sala1" data-camx="7" data-camz="-7.5"
+        data-desc="Vaso cariátide da tradição tapajônica, caracterizado por figuras humanas e zoomórficas aplicadas ao corpo do vaso. Utilizado em contextos cerimoniais e de troca entre grupos. A riqueza plástica representa a sofisticada produção artística dos povos do Baixo Tapajós."
+        data-kws="santarém,tapajó,cariátide,cerâmica,comércio">
+        <a-cylinder radius="0.34" height="0.74" color="#7a4535" material="roughness:0.75"
+            animation="property:rotation;to:0 360 0;loop:true;dur:12000;easing:linear"></a-cylinder>
+        <a-sphere position="0 0.54 0" radius="0.28" color="#8b5240"
+            animation="property:rotation;to:0 360 0;loop:true;dur:12000;easing:linear"></a-sphere>
+        <a-box position="0.34 0 0" width="0.12" height="0.44" depth="0.12" color="#9a6050"
+            animation="property:rotation;to:0 360 0;loop:true;dur:12000;easing:linear"></a-box>
+        <a-box position="-0.34 0 0" width="0.12" height="0.44" depth="0.12" color="#9a6050"
+            animation="property:rotation;to:0 360 0;loop:true;dur:12000;easing:linear"></a-box>
+    </a-entity>
+    <a-light type="spot" intensity="3.5" position="7 5.5 -11" rotation="-90 0 0" color="#ffc060" angle="28" penumbra="0.4" distance="6" decay="2"></a-light>
+
+    <!-- Wall text sala 1 -->
+    <a-plane position="0 7.6 -19.7" width="10" height="1.5" color="#2a1c0e" opacity="0.85"></a-plane>
+    <a-text value="EXPOSIÇÃO MARAJÓ" position="0 7.8 -19.6" align="center" width="7" color="#d4a843" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"></a-text>
+    <a-text value="Cerâmica e Cosmologia dos Povos da Ilha Grande" position="0 7.3 -19.6" align="center" width="5.5" color="#c8a870"></a-text>
+    <a-plane position="-8 4.5 -19.7" width="6" height="5" color="#2a1c0e" opacity="0.6"></a-plane>
+    <a-text value="A civilização Marajoara\nfloreseceu na ilha de Marajó\npor mais de 900 anos,\ndesenvolvendo uma das mais\nsofisticadas tradições\ncerâmicas das Américas." position="-8 4.5 -19.6" align="center" width="4" color="#c0a070"></a-text>
+    <a-plane position="8 4.5 -19.7" width="6" height="5" color="#2a1c0e" opacity="0.6"></a-plane>
+    <a-text value="Seus artefatos preservados\nem museus e acervos digitais\ncontam a história de um povo\nde extraordinária criatividade\ne profunda relação com\no cosmos e os ancestrais." position="8 4.5 -19.6" align="center" width="4" color="#c0a070"></a-text>
+
+    <!-- TELEPORT PAD sala1 → sala2 -->
+    <a-text value="▼  ACERVO TUPI-GUARANI  ▼" position="0 2.8 -19.5" align="center" width="3.5" color="#d4a843"></a-text>
+    <a-cylinder id="tp1" class="interativo"
+        position="0 0.04 -19" radius="1.5" height="0.06"
+        color="#d4a843" opacity="0.55"
+        material="emissive:#d4a843;emissiveIntensity:0.5;transparent:true"
+        data-tipo="tp" data-destino="sala2"
+        animation="property:material.emissiveIntensity;from:0.3;to:0.75;loop:true;dur:1100;easing:easeInOutSine">
+    </a-cylinder>
+    <a-text value="OLHAR PARA TELEPORTAR" position="0 0.5 -19" align="center" width="2.8" color="#ffe090"></a-text>
+
+    <!-- ════════════════════════════════════════
+         SALA 2 — ACERVO TUPI-GUARANI  (z: -22 to -43)
+    ════════════════════════════════════════ -->
+    <a-light type="point" intensity="5"   position="0  7  -30" color="#b0d0ff" distance="26" decay="1.2"></a-light>
+    <a-light type="point" intensity="3"   position="-8 5  -29" color="#90b8ff" distance="15" decay="1.5"></a-light>
+    <a-light type="point" intensity="3"   position="8  5  -29" color="#90b8ff" distance="15" decay="1.5"></a-light>
+    <a-light type="point" intensity="2.5" position="0  5  -37" color="#a0c0ff" distance="13" decay="1.5"></a-light>
+    <a-light type="point" intensity="2"   position="-11 7 -25" color="#b0ccff" distance="10" decay="2"></a-light>
+    <a-light type="point" intensity="2"   position="11  7 -25" color="#b0ccff" distance="10" decay="2"></a-light>
+    <a-light type="point" intensity="2"   position="-11 7 -37" color="#b0ccff" distance="10" decay="2"></a-light>
+    <a-light type="point" intensity="2"   position="11  7 -37" color="#b0ccff" distance="10" decay="2"></a-light>
+
+    <a-plane rotation="-90 0 0" width="28" height="22" position="0 0.01 -31"
+             src="#floor-tex" repeat="8 7" material="color:#283050;roughness:0.85"></a-plane>
+
+    <!-- Walls sala 2 -->
+    <a-box position="0 4.5 -43"  width="28" height="9" depth="0.4" color="#1e2840"></a-box>
+    <a-box position="-14 4.5 -32" width="0.4" height="9" depth="22" color="#18213a"></a-box>
+    <a-box position="14  4.5 -32" width="0.4" height="9" depth="22" color="#18213a"></a-box>
+    <a-box position="0   9   -32" width="28" height="0.4" depth="22" color="#10151f"></a-box>
+    <!-- blue trim -->
+    <a-box position="0 0.05 -43"   width="28" height="0.08" depth="0.5" color="#5080c0" material="emissive:#204070;emissiveIntensity:0.7;metalness:0.8"></a-box>
+    <a-box position="-13.8 0.04 -32" width="0.06" height="0.06" depth="22" color="#5080c0" material="emissive:#5080c0;emissiveIntensity:0.9"></a-box>
+    <a-box position="13.8  0.04 -32" width="0.06" height="0.06" depth="22" color="#5080c0" material="emissive:#5080c0;emissiveIntensity:0.9"></a-box>
+    <!-- pillars -->
+    <a-cylinder position="-11 4.5 -25" radius="0.24" height="9" color="#1e2840"></a-cylinder>
+    <a-cylinder position="11  4.5 -25" radius="0.24" height="9" color="#1e2840"></a-cylinder>
+    <a-cylinder position="-11 4.5 -38" radius="0.24" height="9" color="#1e2840"></a-cylinder>
+    <a-cylinder position="11  4.5 -38" radius="0.24" height="9" color="#1e2840"></a-cylinder>
+
+    <!-- TELEPORT PAD sala2 → sala1 -->
+    <a-text value="▲  EXPOSIÇÃO MARAJÓ  ▲" position="0 2.8 -23" align="center" width="3.5" color="#90b8ff"></a-text>
+    <a-cylinder id="tp2" class="interativo"
+        position="0 0.04 -23" radius="1.5" height="0.06"
+        color="#5080c0" opacity="0.55"
+        material="emissive:#5080c0;emissiveIntensity:0.5;transparent:true"
+        data-tipo="tp" data-destino="sala1"
+        animation="property:material.emissiveIntensity;from:0.3;to:0.75;loop:true;dur:1100;easing:easeInOutSine">
+    </a-cylinder>
+    <a-text value="OLHAR PARA VOLTAR" position="0 0.5 -23" align="center" width="2.8" color="#a0c4ff"></a-text>
+
+    <!-- ARTEFATO 4: Estatueta Tupinambá -->
+    <a-box position="0 0.75 -30" width="1.4" height="1.5" depth="1.4" color="#1e2840"></a-box>
+    <a-box position="0 1.52 -30" width="1.6" height="0.12" depth="1.6" color="#5080c0" material="metalness:0.7;emissive:#204070;emissiveIntensity:0.5"></a-box>
+    <a-entity id="art-estatueta" class="interativo" position="0 2.35 -30"
+        data-nome="Estatueta Antropomorfa Tupinambá" data-cat="Estatuária"
+        data-origem="Litoral Nordestino, Brasil" data-periodo="Séc. XVI – XVII"
+        data-colecao="Acervo Tupi-Guarani" data-sala="sala2" data-camx="0" data-camz="-27"
+        data-desc="Estatueta antropomorfa associada ao povo Tupinambá, documentada por viajantes europeus do século XVI. Esculpida em argila modelada à mão, representa uma figura ancestral com adornos corporais típicos da cultura Tupi, incluindo marcas de identidade tribal."
+        data-kws="tupinambá,estatueta,litoral,tupi,ancestral">
+        <a-cylinder radius="0.14" height="0.56" color="#d09058" material="roughness:0.85"
+            animation="property:rotation;to:0 360 0;loop:true;dur:16000;easing:linear"></a-cylinder>
+        <a-sphere radius="0.19" position="0 0.43 0" color="#e0a068"
+            animation="property:rotation;to:0 360 0;loop:true;dur:16000;easing:linear"></a-sphere>
+        <a-cylinder radius="0.06" height="0.38" rotation="0 0 45" position="0.22 0.1 0" color="#c08848"
+            animation="property:rotation;to:45 360 45;loop:true;dur:16000;easing:linear"></a-cylinder>
+        <a-cylinder radius="0.06" height="0.38" rotation="0 0 -45" position="-0.22 0.1 0" color="#c08848"
+            animation="property:rotation;to:-45 360 -45;loop:true;dur:16000;easing:linear"></a-cylinder>
+    </a-entity>
+    <a-light type="spot" intensity="4" position="0 5.5 -30" rotation="-90 0 0" color="#b0d0ff" angle="30" penumbra="0.4" distance="6" decay="2"></a-light>
+
+    <!-- ARTEFATO 5: Grafismo Ye'kwana -->
+    <a-box position="-7 0.7 -33" width="1.2" height="1.4" depth="1.2" color="#1e2840"></a-box>
+    <a-box position="-7 1.42 -33" width="1.4" height="0.12" depth="1.4" color="#5080c0" material="metalness:0.7;emissive:#204070;emissiveIntensity:0.5"></a-box>
+    <a-entity id="art-grafismo" class="interativo" position="-7 2.3 -33"
+        data-nome="Grafismo Ye'kwana (Réplica)" data-cat="Arte Têxtil"
+        data-origem="Alto Orinoco, Amazonas" data-periodo="Contemporâneo / Tradição milenar"
+        data-colecao="Acervo Tupi-Guarani" data-sala="sala2" data-camx="-7" data-camz="-29.5"
+        data-desc="Réplica tridimensional de grafismos tradicionais Ye'kwana. Os padrões geométricos em espiral e losango são transmitidos oralmente de geração em geração e carregam significados cosmológicos sobre a criação do mundo e as forças da natureza."
+        data-kws="ye'kwana,grafismo,têxtil,geometria,cosmologia">
+        <a-box width="0.56" height="0.56" depth="0.56" color="#8b1a1a" material="roughness:0.7"
+            animation="property:rotation;to:45 405 45;loop:true;dur:20000;easing:linear"></a-box>
+        <a-box width="0.38" height="0.38" depth="0.38" color="#5080c0"
+            material="metalness:0.3;emissive:#102040;emissiveIntensity:0.5"
+            animation="property:rotation;to:-45 315 -45;loop:true;dur:15000;easing:linear"></a-box>
+    </a-entity>
+    <a-light type="spot" intensity="3.5" position="-7 5.5 -33" rotation="-90 0 0" color="#90b8ff" angle="28" penumbra="0.4" distance="6" decay="2"></a-light>
+
+    <!-- ARTEFATO 6: Petroglifo -->
+    <a-box position="7 0.7 -33" width="1.2" height="1.4" depth="1.2" color="#1e2840"></a-box>
+    <a-box position="7 1.42 -33" width="1.4" height="0.12" depth="1.4" color="#5080c0" material="metalness:0.7;emissive:#204070;emissiveIntensity:0.5"></a-box>
+    <a-entity id="art-petro" class="interativo" position="7 2.3 -33"
+        data-nome="Petroglifo Guarani (Molde 3D)" data-cat="Arqueologia Rupestre"
+        data-origem="Rio Grande do Sul" data-periodo="1000 – 1500 d.C."
+        data-colecao="Acervo Tupi-Guarani" data-sala="sala2" data-camx="7" data-camz="-29.5"
+        data-desc="Molde digital em 3D de petroglifo identificado em sítio arqueológico gaúcho associado à tradição Guarani. As incisões em pedra representam figuras solares e zoomórficas relacionadas ao ciclo agrícola e à espiritualidade dos povos de língua Tupi-Guarani."
+        data-kws="guarani,petroglifo,rupestre,gaúcho,solar">
+        <a-cylinder radius="0.47" height="0.13" color="#5a6a80" material="roughness:0.9"
+            animation="property:rotation;to:0 360 0;loop:true;dur:22000;easing:linear"></a-cylinder>
+        <a-torus position="0 0.08 0" radius="0.33" radius-tubular="0.032" color="#a0b8d0"
+            material="emissive:#304060;emissiveIntensity:0.5"
+            animation="property:rotation;to:0 360 0;loop:true;dur:22000;easing:linear"></a-torus>
+        <a-torus position="0 0.08 0" radius="0.18" radius-tubular="0.026" color="#c0d8f0"
+            material="emissive:#406080;emissiveIntensity:0.6"
+            animation="property:rotation;to:0 360 0;loop:true;dur:22000;easing:linear"></a-torus>
+    </a-entity>
+    <a-light type="spot" intensity="3.5" position="7 5.5 -33" rotation="-90 0 0" color="#90b8ff" angle="28" penumbra="0.4" distance="6" decay="2"></a-light>
+
+    <!-- ARTEFATO 7: Colar Guarani -->
+    <a-box position="-5 0.7 -38" width="1.2" height="1.4" depth="1.2" color="#1e2840"></a-box>
+    <a-box position="-5 1.42 -38" width="1.4" height="0.12" depth="1.4" color="#5080c0" material="metalness:0.7;emissive:#204070;emissiveIntensity:0.5"></a-box>
+    <a-entity id="art-colar" class="interativo" position="-5 2.3 -38"
+        data-nome="Colar de Sementes Guarani" data-cat="Adorno Pessoal"
+        data-origem="Mato Grosso do Sul" data-periodo="Séc. XIX – XX"
+        data-colecao="Acervo Tupi-Guarani" data-sala="sala2" data-camx="-5" data-camz="-34.5"
+        data-desc="Colar cerimonial confeccionado com sementes, dentes de animais e fibras naturais. Cada elemento carrega significado simbólico dentro da cosmologia Guarani: as sementes representam a fertilidade da terra, os dentes a força dos ancestrais caçadores."
+        data-kws="guarani,adorno,colar,sementes,cerimônia">
+        <a-torus radius="0.36" radius-tubular="0.065" color="#8B6914" material="roughness:0.8"
+            animation="property:rotation;from:90 0 0;to:90 360 0;loop:true;dur:10000;easing:linear"></a-torus>
+        <a-sphere position="0.36 0 0"  radius="0.07" color="#c8a030" animation="property:rotation;from:90 0 0;to:90 360 0;loop:true;dur:10000;easing:linear"></a-sphere>
+        <a-sphere position="-0.36 0 0" radius="0.07" color="#a07020" animation="property:rotation;from:90 0 0;to:90 360 0;loop:true;dur:10000;easing:linear"></a-sphere>
+        <a-sphere position="0 0 0.36"  radius="0.07" color="#c8a030" animation="property:rotation;from:90 0 0;to:90 360 0;loop:true;dur:10000;easing:linear"></a-sphere>
+        <a-sphere position="0 0 -0.36" radius="0.07" color="#a07020" animation="property:rotation;from:90 0 0;to:90 360 0;loop:true;dur:10000;easing:linear"></a-sphere>
+    </a-entity>
+    <a-light type="spot" intensity="3.5" position="-5 5.5 -38" rotation="-90 0 0" color="#90b8ff" angle="28" penumbra="0.4" distance="6" decay="2"></a-light>
+
+    <!-- ARTEFATO 8: Arco e Flecha -->
+    <a-box position="5 0.7 -38" width="1.2" height="1.4" depth="1.2" color="#1e2840"></a-box>
+    <a-box position="5 1.42 -38" width="1.4" height="0.12" depth="1.4" color="#5080c0" material="metalness:0.7;emissive:#204070;emissiveIntensity:0.5"></a-box>
+    <a-entity id="art-flecha" class="interativo" position="5 2.3 -38"
+        data-nome="Arco e Flecha Tupi (Réplica)" data-cat="Instrumentos"
+        data-origem="Amazônia Central" data-periodo="Séc. XVII – XVIII"
+        data-colecao="Acervo Tupi-Guarani" data-sala="sala2" data-camx="5" data-camz="-34.5"
+        data-desc="Réplica de arco e flecha Tupi, confeccionados com madeira de paxiúba e fibras de timbó. As flechas eram decoradas com penas de araras e tucanos, cada cor indicando a função — caça, guerra ou cerimônia. Documento fundamental da tecnologia indígena pré-colonial."
+        data-kws="tupi,arco,flecha,caça,guerra,tecnologia">
+        <a-cylinder radius="0.03" height="0.96" color="#8B6040" material="roughness:0.9"
+            animation="property:rotation;to:0 360 0;loop:true;dur:12000;easing:linear"></a-cylinder>
+        <a-cone position="0 0.53 0" radius-bottom="0.07" radius-top="0.01" height="0.22" color="#c0a060"
+            animation="property:rotation;to:0 360 0;loop:true;dur:12000;easing:linear"></a-cone>
+        <a-box position="0.02 -0.36 0" width="0.04" height="0.16" depth="0.04" color="#cc2200"
+            animation="property:rotation;to:0 360 0;loop:true;dur:12000;easing:linear"></a-box>
+        <a-box position="-0.02 -0.36 0" width="0.04" height="0.16" depth="0.04" color="#0044cc"
+            animation="property:rotation;to:0 360 0;loop:true;dur:12000;easing:linear"></a-box>
+    </a-entity>
+    <a-light type="spot" intensity="3.5" position="5 5.5 -38" rotation="-90 0 0" color="#90b8ff" angle="28" penumbra="0.4" distance="6" decay="2"></a-light>
+
+    <!-- Wall text sala 2 -->
+    <a-plane position="0 7.6 -42.7" width="10" height="1.5" color="#10151f" opacity="0.9"></a-plane>
+    <a-text value="ACERVO TUPI-GUARANI" position="0 7.8 -42.6" align="center" width="7" color="#6090d0" font="https://cdn.aframe.io/fonts/Exo2Bold.fnt"></a-text>
+    <a-text value="Objetos, adornos e arte dos povos de língua Tupi" position="0 7.3 -42.6" align="center" width="5.5" color="#90b0e0"></a-text>
+    <a-plane position="-8 4.5 -42.7" width="6" height="5" color="#10151f" opacity="0.6"></a-plane>
+    <a-text value="Os povos Tupi-Guarani\nhabitavam grande parte\ndo litoral e interior\ndo Brasil antes da\nchegada europeia,\nformando uma das maiores\nfamílias linguísticas\ndas Américas." position="-8 4.5 -42.6" align="center" width="4" color="#8090b0"></a-text>
+    <a-plane position="8 4.5 -42.7" width="6" height="5" color="#10151f" opacity="0.6"></a-plane>
+    <a-text value="Seu legado permanece\nvivo nas línguas, festas,\nculinária e práticas\nespirituais de comunidades\nindígenas que resistiram\naté os dias atuais,\nguardando a memória\ndos seus ancestrais." position="8 4.5 -42.6" align="center" width="4" color="#8090b0"></a-text>
+
+</a-scene>
+
+<script>
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
+const saved = [];
+let current = null;
+let searchIdx = [];
+
+const ROOMS = {
+    sala1: { x: 0,   z: 3,   label: '/ Exposição Marajó' },
+    sala2: { x: 0,   z: -21, label: '/ Acervo Tupi-Guarani' }
+};
+
+// ══════════════════════════════════════════
+// FUSE GAZE ANIMATION
+// ══════════════════════════════════════════
+const gazeRing = document.getElementById('gaze-ring');
+const gazeArc  = document.getElementById('gaze-arc');
+let gazeTimer  = null;
+let gazeStart  = null;
+const FUSE_MS  = 1500;
+
+function startGaze() {
+    gazeRing.classList.add('active');
+    gazeStart = performance.now();
+    animateGaze();
+}
+function stopGaze() {
+    gazeRing.classList.remove('active');
+    gazeArc.style.strokeDashoffset = '113';
+    if (gazeTimer) { cancelAnimationFrame(gazeTimer); gazeTimer = null; }
+    gazeStart = null;
+}
+function animateGaze() {
+    if (!gazeStart) return;
+    const elapsed = performance.now() - gazeStart;
+    const pct = Math.min(elapsed / FUSE_MS, 1);
+    gazeArc.style.strokeDashoffset = 113 * (1 - pct);
+    if (pct < 1) gazeTimer = requestAnimationFrame(animateGaze);
+}
+
+// ══════════════════════════════════════════
+// INIT — bind events after scene loads
+// ══════════════════════════════════════════
+document.addEventListener('DOMContentLoaded', () => {
+    const scene = document.querySelector('a-scene');
+    scene.addEventListener('loaded', initEvents);
+});
+
+function initEvents() {
+    document.querySelectorAll('.interativo').forEach(el => {
+        const isTp = el.dataset.tipo === 'tp';
+
+        // Fuse (gaze) start/end animation
+        el.addEventListener('mouseenter', startGaze);
+        el.addEventListener('mouseleave', stopGaze);
+
+        // Hover scale for non-pads
+        if (!isTp) {
+            el.addEventListener('mouseenter', () => el.setAttribute('scale','1.1 1.1 1.1'));
+            el.addEventListener('mouseleave', () => el.setAttribute('scale','1 1 1'));
+        }
+
+        // Fuse fires a synthetic 'click' — handle both fuse AND mouse click
+        el.addEventListener('click', () => {
+            stopGaze();
+            if (isTp) doTeleport(el.dataset.destino);
+            else      openArtifact(el);
+        });
+    });
+
+    // Build search index
+    const colsSeen = new Set();
+    document.querySelectorAll('.interativo[data-nome]').forEach(el => {
+        const d = el.dataset;
+        if (!colsSeen.has(d.colecao)) {
+            colsSeen.add(d.colecao);
+            searchIdx.push({ type:'colecao', nome: d.colecao, sala: d.sala });
+        }
+        searchIdx.push({
+            type:'artefato', nome: d.nome, cat: d.cat,
+            colecao: d.colecao, sala: d.sala,
+            camx: parseFloat(d.camx), camz: parseFloat(d.camz),
+            elId: el.id
+        });
+    });
+    renderSearch('');
+}
+
+// ══════════════════════════════════════════
+// SPLASH
+// ══════════════════════════════════════════
+function enterExperience() {
+    const s = document.getElementById('splash');
+    s.classList.add('hidden');
+    setTimeout(() => s.remove(), 900);
+}
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(t._tid);
+    t._tid = setTimeout(() => t.classList.remove('show'), 2800);
+}
+
+// ══════════════════════════════════════════
+// TELEPORT — moves <a-camera> directly
+// ══════════════════════════════════════════
+function doTeleport(salaId, overX, overZ) {
+    const flash = document.getElementById('tp-flash');
+    flash.classList.add('flash');
+    setTimeout(() => {
+        const cam = document.getElementById('cam');
+        const r = ROOMS[salaId];
+        const x = (overX !== undefined) ? overX : r.x;
+        const z = (overZ !== undefined) ? overZ : r.z;
+        // y=1.65 is the camera's eye height
+        cam.setAttribute('position', `${x} 1.65 ${z}`);
+        document.getElementById('room-label').textContent = r.label;
+        flash.classList.remove('flash');
+        const names = { sala1:'Exposição Marajó', sala2:'Acervo Tupi-Guarani' };
+        showToast('Teletransportado → ' + names[salaId]);
+    }, 160);
+}
+
+// ══════════════════════════════════════════
+// ARTIFACT PANEL
+// ══════════════════════════════════════════
+function openArtifact(el) {
+    document.getElementById('coll-panel').classList.remove('open');
+    document.getElementById('btn-coll').classList.remove('active');
+
+    const d = el.dataset;
+    current = d;
+
+    document.getElementById('p-cat').textContent    = d.cat;
+    document.getElementById('p-name').textContent   = d.nome;
+    document.getElementById('p-origin').textContent = d.origem;
+    document.getElementById('p-period').textContent = d.periodo;
+    document.getElementById('p-coll').textContent   = d.colecao;
+    document.getElementById('p-desc').textContent   = d.desc;
+
+    const kwEl = document.getElementById('p-kws');
+    kwEl.innerHTML = '';
+    d.kws.split(',').forEach(k => {
+        const s = document.createElement('span');
+        s.className = 'kw'; s.textContent = k.trim();
+        kwEl.appendChild(s);
+    });
+
+    const alreadySaved = saved.some(c => c.nome === d.nome);
+    const btn = document.getElementById('btn-save');
+    btn.textContent = alreadySaved ? '✓ Salvo na Coleção' : '＋ Salvar na Minha Coleção';
+    btn.className = 'btn-save' + (alreadySaved ? ' saved' : '');
+
+    document.getElementById('info-panel').classList.add('open');
+}
+
+function closePanel() {
+    document.getElementById('info-panel').classList.remove('open');
+    current = null;
+}
+
+// ══════════════════════════════════════════
+// SAVE
+// ══════════════════════════════════════════
+function saveItem() {
+    if (!current || saved.some(c => c.nome === current.nome)) return;
+    saved.push({ ...current });
+    updateCollUI();
+    document.getElementById('btn-save').textContent = '✓ Salvo na Coleção';
+    document.getElementById('btn-save').className = 'btn-save saved';
+    showToast(`"${current.nome}" salvo na coleção`);
+}
+
+function updateCollUI() {
+    const n = saved.length;
+    document.getElementById('c-count').textContent = `${n} ${n===1?'item':'itens'} salvos`;
+    const b = document.getElementById('badge');
+    b.style.display = n > 0 ? 'inline-flex' : 'none';
+    b.textContent = n;
+
+    const list = document.getElementById('coll-list');
+    if (!n) {
+        list.innerHTML = '<div class="c-empty">Nenhum artefato salvo.<br><br>Olhe fixo para um objeto por 1,5s para abrir seu painel.</div>';
+        return;
+    }
+    list.innerHTML = saved.map((item, i) => `
+        <div class="c-item" onclick="openSavedItem(${i})">
+            <div class="c-item-name">${item.nome}</div>
+            <div class="c-item-sub">${item.cat} · ${item.periodo}</div>
+        </div>`).join('');
+}
+
+function openSavedItem(i) {
+    current = saved[i];
+    const d = current;
+    document.getElementById('p-cat').textContent    = d.cat;
+    document.getElementById('p-name').textContent   = d.nome;
+    document.getElementById('p-origin').textContent = d.origem;
+    document.getElementById('p-period').textContent = d.periodo;
+    document.getElementById('p-coll').textContent   = d.colecao;
+    document.getElementById('p-desc').textContent   = d.desc;
+    const kwEl = document.getElementById('p-kws');
+    kwEl.innerHTML = '';
+    d.kws.split(',').forEach(k => {
+        const s = document.createElement('span'); s.className='kw'; s.textContent=k.trim(); kwEl.appendChild(s);
+    });
+    document.getElementById('btn-save').textContent = '✓ Salvo na Coleção';
+    document.getElementById('btn-save').className = 'btn-save saved';
+    document.getElementById('coll-panel').classList.remove('open');
+    document.getElementById('btn-coll').classList.remove('active');
+    document.getElementById('info-panel').classList.add('open');
+}
+
+// ══════════════════════════════════════════
+// PANELS
+// ══════════════════════════════════════════
+function toggleColl() {
+    const p = document.getElementById('coll-panel');
+    const ip = document.getElementById('info-panel');
+    const b  = document.getElementById('btn-coll');
+    const opening = !p.classList.contains('open');
+    p.classList.toggle('open');
+    b.classList.toggle('active', opening);
+    if (opening) ip.classList.remove('open');
+}
+
+// ══════════════════════════════════════════
+// SEARCH
+// ══════════════════════════════════════════
+function openSearch() {
+    document.getElementById('search-wrap').classList.add('open');
+    document.getElementById('search-input').value = '';
+    renderSearch('');
+    setTimeout(() => document.getElementById('search-input').focus(), 40);
+}
+function closeSearch() { document.getElementById('search-wrap').classList.remove('open'); }
+function overlayClick(e) { if (e.target === document.getElementById('search-wrap')) closeSearch(); }
+function onSearch(v) { renderSearch(v.trim().toLowerCase()); }
+
+function renderSearch(q) {
+    const box = document.getElementById('search-results');
+    const items = q ? searchIdx.filter(it =>
+        `${it.nome} ${it.colecao||''} ${it.cat||''} ${it.sala}`.toLowerCase().includes(q)
+    ) : searchIdx;
+
+    if (!items.length) { box.innerHTML = '<div class="s-empty">Nenhum resultado encontrado.</div>'; return; }
+
+    const cols = items.filter(i => i.type==='colecao');
+    const arts = items.filter(i => i.type==='artefato');
+    const sNome = { sala1:'Exposição Marajó', sala2:'Acervo Tupi-Guarani' };
+    let html = '';
+
+    if (cols.length) {
+        html += '<div class="s-label">Coleções</div>';
+        cols.forEach(it => {
+            html += `<div class="s-row" onclick="goCollection('${it.nome}','${it.sala}')">
+                <div class="s-icon col">🏛️</div>
+                <div><div class="s-name">${it.nome}</div><div class="s-sub">${sNome[it.sala]}</div></div>
+                <div class="s-go">↗ Ir para sala</div>
+            </div>`;
+        });
+    }
+    if (arts.length) {
+        html += '<div class="s-label">Artefatos</div>';
+        arts.forEach(it => {
+            html += `<div class="s-row" onclick="goArtifact('${it.elId}','${it.sala}',${it.camx},${it.camz})">
+                <div class="s-icon art">🏺</div>
+                <div><div class="s-name">${it.nome}</div><div class="s-sub">${it.cat} · ${it.colecao}</div></div>
+                <div class="s-go">↗ Ir para artefato</div>
+            </div>`;
+        });
+    }
+    box.innerHTML = html;
+}
+
+function goCollection(nome, sala) {
+    closeSearch();
+    doTeleport(sala);
+    setTimeout(() => showToast('Coleção: ' + nome), 280);
+}
+
+function goArtifact(elId, sala, camx, camz) {
+    closeSearch();
+    // teleport to stored cam position (already 3.5 units in front of artifact)
+    doTeleport(sala, camx, camz);
+    setTimeout(() => {
+        const el = document.getElementById(elId);
+        if (el) openArtifact(el);
+    }, 300);
+}
+
+// ══════════════════════════════════════════
+// KEYBOARD
+// ══════════════════════════════════════════
+document.addEventListener('keydown', e => {
+    if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openSearch(); return; }
+    if (e.key === 'Escape') {
+        if (document.getElementById('search-wrap').classList.contains('open')) { closeSearch(); return; }
+        closePanel();
+        document.getElementById('coll-panel').classList.remove('open');
+        document.getElementById('btn-coll').classList.remove('active');
+    }
+    if (e.key === 'Enter' && document.getElementById('search-wrap').classList.contains('open')) {
+        const first = document.querySelector('.s-row');
+        if (first) first.click();
+    }
+});
+</script>
+</body>
+</html>

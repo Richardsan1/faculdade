@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VR Memory - Painel do Curador</title>
+    <style>
+        * { box-sizing: border-box; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; }
+        body { display: flex; height: 100vh; background-color: #f4f7f6; }
+        .sidebar { width: 250px; background-color: #2c3e50; color: white; padding: 20px; }
+        .sidebar h2 { margin-bottom: 30px; font-size: 1.5rem; border-bottom: 2px solid #e67e22; padding-bottom: 10px; }
+        .sidebar ul { list-style: none; }
+        .sidebar li { padding: 15px 0; border-bottom: 1px solid #34495e; cursor: pointer; }
+        .sidebar li:hover { color: #e67e22; }
+        .main-content { flex: 1; padding: 40px; overflow-y: auto; }
+        .header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; }
+        .btn-add { background-color: #e67e22; color: white; border: none; padding: 10px 20px; border-radius: 5px; cursor: pointer; font-weight: bold; }
+        .btn-add:hover { background-color: #d35400; }
+        table { width: 100%; border-collapse: collapse; background: white; box-shadow: 0 1px 3px rgba(0,0,0,0.1); border-radius: 8px; overflow: hidden; }
+        th, td { padding: 15px; text-align: left; border-bottom: 1px solid #ddd; }
+        th { background-color: #ecf0f1; color: #333; }
+        .status { padding: 5px 10px; border-radius: 20px; font-size: 0.85rem; font-weight: bold; }
+        .status.revisao { background-color: #f1c40f; color: #8a6d3b; }
+        .status.aprovado { background-color: #2ecc71; color: white; }
+        .action-btn { border: none; padding: 6px 12px; border-radius: 4px; cursor: pointer; margin-right: 5px; color: white; font-size: 0.8rem; }
+        .btn-approve { background-color: #2ecc71; }
+        .btn-reject { background-color: #e74c3c; }
+        .btn-view { background-color: #3498db; }
+    </style>
+</head>
+<body>
+
+    <div class="sidebar">
+        <h2>VR Memory</h2>
+        <ul>
+            <li>Dashboard</li>
+            <li style="color: #e67e22; font-weight: bold;">Curadoria de Acervo</li>
+            <li>Exposições 3D</li>
+            <li>Relatórios</li>
+        </ul>
+    </div>
+
+    <div class="main-content">
+        <div class="header">
+            <h1>Gestão de Acervo Histórico</h1>
+            <button class="btn-add">+ Novo Item Multimídia</button>
+        </div>
+
+        <table>
+            <thead>
+                <tr>
+                    <th>Título do Item</th>
+                    <th>Tipo de Mídia</th>
+                    <th>Povo / Tema</th>
+                    <th>Status</th>
+                    <th>Ações</th>
+                </tr>
+            </thead>
+            <tbody id="tabela-itens">
+                <tr>
+                    <td>Cesto de Carga Yanomami</td>
+                    <td>Modelo 3D</td>
+                    <td>Yanomami</td>
+                    <td><span class="status revisao">Em Revisão</span></td>
+                    <td>
+                        <button class="action-btn btn-view" onclick="visualizar()">Ver</button>
+                        <button class="action-btn btn-approve" onclick="aprovar(this)">Aprovar</button>
+                        <button class="action-btn btn-reject" onclick="rejeitar(this)">Rejeitar</button>
+                    </td>
+                </tr>
+                <tr>
+                    <td>Canto de Cura</td>
+                    <td>Áudio</td>
+                    <td>Guarani Kaiowá</td>
+                    <td><span class="status aprovado">Aprovado</span></td>
+                    <td>
+                        <button class="action-btn btn-view" onclick="visualizar()">Ver</button>
+                        <button class="action-btn btn-reject" onclick="rejeitar(this)">Remover</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <script>
+        function aprovar(btn) {
+            const linha = btn.closest('tr');
+            const statusSpan = linha.querySelector('.status');
+            statusSpan.className = 'status aprovado';
+            statusSpan.innerText = 'Aprovado';
+            alert('Item aprovado e enviado para a exposição em VR!');
+        }
+
+        function rejeitar(btn) {
+            const linha = btn.closest('tr');
+            linha.style.display = 'none';
+            alert('Item removido ou rejeitado.');
+        }
+
+        function visualizar() {
+            alert('Abrindo visualizador de metadados e prévia do arquivo...');
+        }
+    </script>
+</body>
+</html>
