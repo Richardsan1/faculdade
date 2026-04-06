@@ -1,0 +1,35 @@
+module IMC;
+
+@ Classifica o IMC de uma pessoa com base no peso e altura informados.
+@ IMC = peso / (altura * altura)  — usando aritmetica inteira
+
+fn calcular_imc(peso: int, altura: int): int
+start
+    ret peso / (altura * altura);
+end
+
+proc classificar(imc: int)
+start
+    match (imc)
+        when 0..17  => print("Abaixo do peso");
+        when 18..24 => print("Peso normal");
+        when 25..29 => print("Sobrepeso");
+        when 30..39 => print("Obesidade");
+        otherwise   => print("Obesidade grave");
+    end;
+end
+
+proc main()
+locals
+    peso, altura, imc: int;
+start
+    print("=== Calculadora de IMC ===");
+    print("Informe o peso em kg:");
+    scan(peso);
+    print("Informe a altura em dm (ex: 17 para 1.70m):");
+    scan(altura);
+
+    imc := calcular_imc(peso, altura);
+    print("IMC aproximado:", imc);
+    classificar(imc);
+end

@@ -151,6 +151,7 @@
         <div class="hud-controls">
             <button class="hud-btn" onclick="openSearch()">🔍 Buscar <span style="opacity:.4;font-size:.65em">Ctrl+K</span></button>
             <button class="hud-btn" id="btn-coll" onclick="toggleColl()">Minha Coleção <span id="badge" class="badge" style="display:none">0</span></button>
+            <button class="hud-btn" onclick="window.location.href='curadoria.html'">Painel do Curador</button>
         </div>
     </div>
     <div class="hud-bottom">

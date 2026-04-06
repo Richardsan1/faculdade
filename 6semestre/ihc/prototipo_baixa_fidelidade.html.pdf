@@ -1,0 +1,486 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>VR Memory - Prototipo Baixa Fidelidade</title>
+  <style>
+    :root {
+      --paper: #f8f5ec;
+      --ink: #1f1a16;
+      --line: #5d5247;
+      --panel: #fffdf8;
+      --accent: #b36b2c;
+      --ok: #2f7a3f;
+      --warn: #b37d22;
+      --danger: #9b3d32;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: "Courier New", monospace;
+      color: var(--ink);
+      background:
+        linear-gradient(0deg, rgba(248, 245, 236, 0.96), rgba(248, 245, 236, 0.96)),
+        repeating-linear-gradient(
+          45deg,
+          #efe8db,
+          #efe8db 10px,
+          #f4efe5 10px,
+          #f4efe5 20px
+        );
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      border-bottom: 2px solid var(--line);
+      padding: 14px 18px;
+      background: var(--panel);
+      position: sticky;
+      top: 0;
+      z-index: 10;
+    }
+
+    .top {
+      display: flex;
+      gap: 12px;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      font-weight: 700;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      font-size: 0.95rem;
+    }
+
+    .nav {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    button {
+      border: 2px solid var(--line);
+      background: var(--panel);
+      color: var(--ink);
+      padding: 7px 10px;
+      font-size: 0.78rem;
+      cursor: pointer;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    button:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+    }
+
+    button.active {
+      border-color: var(--accent);
+      background: #fff5eb;
+      color: var(--accent);
+      font-weight: 700;
+    }
+
+    main {
+      width: min(1100px, 96vw);
+      margin: 18px auto 28px;
+      flex: 1;
+    }
+
+    .screen {
+      display: none;
+      border: 2px dashed var(--line);
+      background: var(--panel);
+      padding: 14px;
+      min-height: 72vh;
+    }
+
+    .screen.visible {
+      display: block;
+    }
+
+    .hint {
+      border: 1px dashed var(--line);
+      padding: 8px;
+      font-size: 0.78rem;
+      margin-bottom: 12px;
+      background: #faf3e8;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 10px;
+    }
+
+    .card {
+      border: 2px solid var(--line);
+      padding: 10px;
+      background: #fff;
+    }
+
+    .title {
+      margin: 0 0 8px;
+      font-size: 0.95rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .small {
+      margin: 0;
+      font-size: 0.78rem;
+      line-height: 1.45;
+    }
+
+    .row {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      align-items: center;
+    }
+
+    input {
+      border: 2px solid var(--line);
+      padding: 7px 8px;
+      background: #fff;
+      width: 100%;
+      font-family: inherit;
+      font-size: 0.82rem;
+    }
+
+    .status {
+      display: inline-block;
+      padding: 3px 8px;
+      border: 2px solid;
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.06em;
+    }
+
+    .s-review {
+      color: var(--warn);
+      border-color: var(--warn);
+      background: #fff9ec;
+    }
+
+    .s-ok {
+      color: var(--ok);
+      border-color: var(--ok);
+      background: #eefbf1;
+    }
+
+    .s-no {
+      color: var(--danger);
+      border-color: var(--danger);
+      background: #fff0ee;
+    }
+
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-top: 8px;
+      font-size: 0.8rem;
+    }
+
+    .table th,
+    .table td {
+      border: 1px solid var(--line);
+      padding: 7px;
+      text-align: left;
+      vertical-align: middle;
+    }
+
+    .foot {
+      margin-top: 12px;
+      border-top: 1px dashed var(--line);
+      padding-top: 10px;
+      font-size: 0.75rem;
+    }
+
+    .muted {
+      opacity: 0.75;
+    }
+
+    @media (max-width: 900px) {
+      .grid {
+        grid-template-columns: 1fr;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="top">
+      <div class="brand">VR Memory | Prototipo de Baixa Fidelidade (Navegavel)</div>
+      <nav class="nav" id="main-nav">
+        <button data-screen="entrada" class="active">Entrada</button>
+        <button data-screen="galeria">Galeria</button>
+        <button data-screen="detalhe">Detalhe Item</button>
+        <button data-screen="colecao">Minha Colecao</button>
+        <button data-screen="busca">Busca</button>
+        <button data-screen="curadoria">Curadoria</button>
+      </nav>
+    </div>
+  </header>
+
+  <main>
+    <section class="screen visible" id="entrada">
+      <p class="hint">Tela 1 - Inicio da experiencia. Interacao principal: entrar na exposicao.</p>
+      <div class="card">
+        <h2 class="title">Bem-vindo ao VR Memory</h2>
+        <p class="small">Objetivo: explorar acervos historico-culturais, consultar metadados e salvar itens de interesse.</p>
+        <div class="row" style="margin-top:10px;">
+          <button id="btn-entrar">Entrar na Exposicao</button>
+          <button id="btn-direto-curadoria">Ir ao Painel do Curador</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="galeria">
+      <p class="hint">Tela 2 - Galeria com salas tematicas. Interacao principal: escolher sala e abrir item.</p>
+      <div class="grid">
+        <article class="card">
+          <h3 class="title">Sala Marajo</h3>
+          <p class="small">Itens: Urna Funeraria, Vaso Cerimonial.</p>
+          <div class="row" style="margin-top:8px;">
+            <button data-open-item="urna">Abrir Urna Funeraria</button>
+            <button data-open-item="vaso">Abrir Vaso Cerimonial</button>
+          </div>
+        </article>
+
+        <article class="card">
+          <h3 class="title">Sala Tupi-Guarani</h3>
+          <p class="small">Itens: Mascara Ritual, Colar de Sementes.</p>
+          <div class="row" style="margin-top:8px;">
+            <button data-open-item="mascara">Abrir Mascara Ritual</button>
+            <button data-open-item="colar">Abrir Colar de Sementes</button>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <section class="screen" id="detalhe">
+      <p class="hint">Tela 3 - Painel de detalhe do artefato. Interacao principal: salvar na colecao pessoal.</p>
+      <div class="card">
+        <h3 class="title" id="item-nome">Selecione um item na Galeria</h3>
+        <p class="small"><strong>Origem:</strong> <span id="item-origem">-</span></p>
+        <p class="small"><strong>Periodo:</strong> <span id="item-periodo">-</span></p>
+        <p class="small"><strong>Categoria:</strong> <span id="item-categoria">-</span></p>
+        <p class="small" style="margin-top:8px;"><strong>Descricao:</strong> <span id="item-descricao">-</span></p>
+        <div class="row" style="margin-top:10px;">
+          <button id="btn-salvar">Salvar na Minha Colecao</button>
+          <button data-screen-link="galeria">Voltar para Galeria</button>
+        </div>
+      </div>
+    </section>
+
+    <section class="screen" id="colecao">
+      <p class="hint">Tela 4 - Minha Colecao. Interacao principal: revisar itens salvos.</p>
+      <div class="card">
+        <h3 class="title">Itens salvos</h3>
+        <ul id="lista-colecao" class="small"></ul>
+        <p id="colecao-vazia" class="small muted">Nenhum item salvo ate o momento.</p>
+      </div>
+    </section>
+
+    <section class="screen" id="busca">
+      <p class="hint">Tela 5 - Busca de itens e colecoes. Interacao principal: pesquisar por termo.</p>
+      <div class="card">
+        <div class="row">
+          <input id="campo-busca" type="text" placeholder="Exemplo: urna, mascara, colar, marajo">
+          <button id="btn-buscar">Buscar</button>
+        </div>
+        <ul id="resultado-busca" class="small" style="margin-top:10px;"></ul>
+      </div>
+    </section>
+
+    <section class="screen" id="curadoria">
+      <p class="hint">Tela 6 - Painel do curador. Interacao principal: aprovar ou rejeitar item.</p>
+      <div class="card">
+        <table class="table">
+          <thead>
+            <tr>
+              <th>Item</th>
+              <th>Tema</th>
+              <th>Status</th>
+              <th>Acoes</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <td>Urna Funeraria Marajoara</td>
+              <td>Marajo</td>
+              <td><span class="status s-review" id="st-urna">Em revisao</span></td>
+              <td>
+                <button onclick="setStatus('st-urna', 'ok')">Aprovar</button>
+                <button onclick="setStatus('st-urna', 'no')">Rejeitar</button>
+              </td>
+            </tr>
+            <tr>
+              <td>Mascara Ritual Tukano</td>
+              <td>Tupi-Guarani</td>
+              <td><span class="status s-review" id="st-mascara">Em revisao</span></td>
+              <td>
+                <button onclick="setStatus('st-mascara', 'ok')">Aprovar</button>
+                <button onclick="setStatus('st-mascara', 'no')">Rejeitar</button>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </section>
+
+    <div class="foot">
+      <strong>Observacao:</strong> este arquivo representa um prototipo de baixa fidelidade navegavel para validacao de fluxo e conceito de interface.
+    </div>
+  </main>
+
+  <script>
+    const items = {
+      urna: {
+        nome: 'Urna Funeraria Marajoara',
+        origem: 'Ilha de Marajo, Para',
+        periodo: '400 - 1300 d.C.',
+        categoria: 'Ceramica',
+        descricao: 'Urna associada a rituais funerarios e memoria ancestral.'
+      },
+      vaso: {
+        nome: 'Vaso Cerimonial Santarem',
+        origem: 'Santarem, Para',
+        periodo: '900 - 1600 d.C.',
+        categoria: 'Ceramica',
+        descricao: 'Vaso decorado usado em contextos cerimoniais.'
+      },
+      mascara: {
+        nome: 'Mascara Ritual Tukano',
+        origem: 'Alto Rio Negro',
+        periodo: 'Sec. XVIII - XIX',
+        categoria: 'Arte Ritual',
+        descricao: 'Mascara usada em rituais de iniciacao.'
+      },
+      colar: {
+        nome: 'Colar de Sementes Guarani',
+        origem: 'Mato Grosso do Sul',
+        periodo: 'Sec. XIX - XX',
+        categoria: 'Adorno Pessoal',
+        descricao: 'Adorno simbolico associado a identidade cultural.'
+      }
+    };
+
+    const colecao = [];
+    let itemAtual = null;
+
+    function showScreen(id) {
+      document.querySelectorAll('.screen').forEach((el) => {
+        el.classList.toggle('visible', el.id === id);
+      });
+      document.querySelectorAll('#main-nav button').forEach((btn) => {
+        btn.classList.toggle('active', btn.dataset.screen === id);
+      });
+    }
+
+    function openItem(key) {
+      const item = items[key];
+      itemAtual = item;
+      document.getElementById('item-nome').textContent = item.nome;
+      document.getElementById('item-origem').textContent = item.origem;
+      document.getElementById('item-periodo').textContent = item.periodo;
+      document.getElementById('item-categoria').textContent = item.categoria;
+      document.getElementById('item-descricao').textContent = item.descricao;
+      showScreen('detalhe');
+    }
+
+    function refreshColecao() {
+      const ul = document.getElementById('lista-colecao');
+      const empty = document.getElementById('colecao-vazia');
+      ul.innerHTML = '';
+      colecao.forEach((nome) => {
+        const li = document.createElement('li');
+        li.textContent = '- ' + nome;
+        ul.appendChild(li);
+      });
+      empty.style.display = colecao.length ? 'none' : 'block';
+    }
+
+    function saveCurrentItem() {
+      if (!itemAtual) {
+        return;
+      }
+      if (!colecao.includes(itemAtual.nome)) {
+        colecao.push(itemAtual.nome);
+        refreshColecao();
+        alert('Item salvo na Minha Colecao.');
+      } else {
+        alert('Este item ja esta na sua colecao.');
+      }
+    }
+
+    function runSearch() {
+      const term = document.getElementById('campo-busca').value.trim().toLowerCase();
+      const out = document.getElementById('resultado-busca');
+      out.innerHTML = '';
+
+      if (!term) {
+        out.innerHTML = '<li>Digite um termo para buscar.</li>';
+        return;
+      }
+
+      const found = Object.values(items).filter((item) => {
+        const text = (item.nome + ' ' + item.categoria + ' ' + item.origem).toLowerCase();
+        return text.includes(term);
+      });
+
+      if (!found.length) {
+        out.innerHTML = '<li>Nenhum resultado encontrado.</li>';
+        return;
+      }
+
+      found.forEach((item) => {
+        const li = document.createElement('li');
+        li.textContent = item.nome + ' | ' + item.categoria + ' | ' + item.origem;
+        out.appendChild(li);
+      });
+    }
+
+    function setStatus(id, value) {
+      const span = document.getElementById(id);
+      if (value === 'ok') {
+        span.textContent = 'Aprovado';
+        span.className = 'status s-ok';
+      } else {
+        span.textContent = 'Rejeitado';
+        span.className = 'status s-no';
+      }
+    }
+
+    document.querySelectorAll('#main-nav button').forEach((btn) => {
+      btn.addEventListener('click', () => showScreen(btn.dataset.screen));
+    });
+
+    document.querySelectorAll('[data-screen-link]').forEach((btn) => {
+      btn.addEventListener('click', () => showScreen(btn.dataset.screenLink));
+    });
+
+    document.querySelectorAll('[data-open-item]').forEach((btn) => {
+      btn.addEventListener('click', () => openItem(btn.dataset.openItem));
+    });
+
+    document.getElementById('btn-entrar').addEventListener('click', () => showScreen('galeria'));
+    document.getElementById('btn-direto-curadoria').addEventListener('click', () => showScreen('curadoria'));
+    document.getElementById('btn-salvar').addEventListener('click', saveCurrentItem);
+    document.getElementById('btn-buscar').addEventListener('click', runSearch);
+
+    refreshColecao();
+  </script>
+</body>
+</html>

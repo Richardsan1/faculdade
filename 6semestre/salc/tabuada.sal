@@ -1,0 +1,37 @@
+module Tabuada;
+
+@ Exibe a tabuada de um numero informado pelo usuario.
+@ Usa for para iterar de 1 a 10 e imprime cada linha.
+
+proc imprimir_tabuada(n: int)
+locals
+    i, resultado: int;
+start
+    print("--- Tabuada do", n, "---");
+    for i := 1 to 10 do
+        start
+            resultado := n * i;
+            print(n, "x", i, "=", resultado);
+        end;
+end
+
+proc main()
+locals
+    numero: int;
+    continuar: bool;
+start
+    continuar := true;
+
+    loop while (continuar)
+        start
+            print("Digite um numero (0 para sair):");
+            scan(numero);
+
+            if (numero = 0)
+                continuar := false
+            else
+                imprimir_tabuada(numero);
+        end;
+
+    print("Encerrando.");
+end

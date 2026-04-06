@@ -1,0 +1,59 @@
+module ParImpar;
+
+@ Le numeros do usuario ate digitar zero.
+@ Para cada numero informa: se e par ou impar,
+@ e se e divisivel por 3, 5 ou ambos (FizzBuzz).
+
+fn eh_par(n: int): bool
+start
+    ret n / 2 * 2 = n;
+end
+
+proc analisar(n: int)
+locals
+    div3, div5: bool;
+start
+    @ par ou impar
+    if (eh_par(n))
+        print(n, "e PAR")
+    else
+        print(n, "e IMPAR");
+
+    @ divisibilidade
+    div3 := n / 3 * 3 = n;
+    div5 := n / 5 * 5 = n;
+
+    if (div3 ^ div5)
+        print(n, "-> FizzBuzz (div. por 3 e por 5)")
+    else if (div3)
+        print(n, "-> Fizz (divisivel por 3)")
+    else if (div5)
+        print(n, "-> Buzz (divisivel por 5)");
+end
+
+proc main()
+locals
+    num, total, pares: int;
+start
+    total := 0;
+    pares := 0;
+
+    print("=== Analisador de numeros ===");
+    print("Digite numeros inteiros (0 encerra):");
+
+    loop
+        scan(num);
+        if (num <> 0)
+            start
+                analisar(num);
+                total := total + 1;
+                if (eh_par(num))
+                    pares := pares + 1;
+            end;
+    until (num = 0);
+
+    print("---");
+    print("Total de numeros:", total);
+    print("Pares:", pares);
+    print("Impares:", total - pares);
+end

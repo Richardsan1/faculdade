@@ -1,0 +1,5 @@
+module m;
+proc main()
+start
+  @{ comentario sem fim
+end
