@@ -1,4 +1,10 @@
-# Projeto Etapa 1 Parte 2 - Modelo Conceitual e Protótipo
+# Modelo Conceitual e Protótipo de baixa fidelidade - VR Memory
+
+- Matheus Gabriel Viana - 10420444
+- Arthur Meneses Neves - 10425727
+- Richard Barbosa Sanchez - 10420179
+- Totti Ferreira Gomes - 10428490
+
 
 ## Sistema Proposto
 VR Memory - Centro Digital Imersivo para exploracao, estudo e curadoria de acervos historico-culturais de povos indígenas.
@@ -195,6 +201,36 @@ obs: como o envio só pode ser feito em pdf, os arquivos html estão com a exten
 3. Abrir um artefato e acionar Salvar na Minha Colecao
 4. Consultar a tela Minha Colecao para confirmar o item salvo
 5. Ir para Painel do Curador e testar Aprovar/Rejeitar
+
+### Evidencias visuais da navegacao
+
+Tela 1 - Entrada no sistema
+
+![Tela de entrada do prototipo](tela-entrada.png)
+
+Tela 2 - Galeria com salas tematicas
+
+![Tela de galeria do prototipo](tela-galeria.png)
+
+Tela 3 - Painel de detalhe do item selecionado
+
+![Tela de detalhe do item](tela-detalhe-item.png)
+
+Tela 4 - Minha Colecao com item salvo
+
+![Tela minha colecao](tela-minha-colecao.png)
+
+Tela 5 - Busca antes da consulta
+
+![Tela de busca inicial](tela-busca.png)
+
+Tela 6 - Busca com termo pesquisado e resultados
+
+![Tela de busca com resultado](tela-busca-pesquisado.png)
+
+Tela 7 - Painel do Curador para aprovar/rejeitar
+
+![Tela de curadoria](tela-curadoria.png)
 
 ## 3. Considerações Finais
 O modelo conceitual do VR Memory alinha linguagem de interface e domínio historico-cultural, reduzindo a distancia entre o que o usuario vê no sistema e as tarefas reais de visita, estudo e curadoria de acervo. As metáforas adotadas favorecem reconhecimento, aprendizado e navegacao, enquanto o protótipo navegável demonstra as principais interações previstas para o sistema.
