@@ -8,32 +8,61 @@
     <link href="https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Lato:wght@300;400;700&display=swap" rel="stylesheet">
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { font-family: 'Lato', sans-serif; background: #1a1208; color: #f5e6c8; overflow: hidden; }
+        body { font-family: 'Lato', sans-serif; background: #1a1208; color: #f5e6c8; overflow: hidden; line-height: 1.4; }
+        button, input { font: inherit; }
+        button:focus-visible, input:focus-visible { outline: 2px solid #ffe7aa; outline-offset: 3px; }
+        body.modal-open .crosshair, body.modal-open #gaze-ring { opacity: 0; }
+        body.modal-open #quick-guide { opacity: 0; pointer-events: none; }
 
         /* SPLASH */
-        #splash { position: fixed; inset: 0; z-index: 9999; background: linear-gradient(160deg, #1a1208 0%, #2a1c0e 50%, #141820 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease; }
+        #splash { position: fixed; inset: 0; z-index: 9999; background: linear-gradient(160deg, #1a1208 0%, #2a1c0e 50%, #141820 100%); display: flex; flex-direction: column; align-items: center; justify-content: center; transition: opacity 0.8s ease; padding: 2rem; text-align: center; overflow-y: auto; }
         #splash.hidden { opacity: 0; pointer-events: none; }
+        .splash-shell { width: min(1040px, 100%); }
         .splash-logo { font-family: 'Cinzel', serif; font-size: clamp(2rem, 5vw, 3.5rem); font-weight: 700; letter-spacing: 0.12em; color: #d4a843; text-shadow: 0 0 40px rgba(212,168,67,0.5); margin-bottom: 0.3em; }
-        .splash-sub { font-size: 0.85rem; letter-spacing: 0.35em; text-transform: uppercase; color: rgba(245,230,200,0.5); margin-bottom: 3rem; }
-        .splash-deco { width: 120px; height: 2px; background: linear-gradient(90deg, transparent, #d4a843, transparent); margin-bottom: 2.5rem; }
-        .splash-desc { max-width: 420px; text-align: center; font-size: 0.95rem; line-height: 1.7; color: rgba(245,230,200,0.7); margin-bottom: 0.8rem; }
-        .splash-controls { max-width: 420px; text-align: center; font-size: 0.78rem; line-height: 1.8; color: rgba(245,230,200,0.45); margin-bottom: 2rem; }
+        .splash-sub { font-size: 0.85rem; letter-spacing: 0.35em; text-transform: uppercase; color: rgba(245,230,200,0.5); margin-bottom: 2.25rem; }
+        .splash-deco { width: 120px; height: 2px; background: linear-gradient(90deg, transparent, #d4a843, transparent); margin: 0 auto 2rem; }
+        .splash-desc { max-width: 620px; margin: 0 auto 0.8rem; text-align: center; font-size: 0.95rem; line-height: 1.7; color: rgba(245,230,200,0.7); }
+        .splash-controls { max-width: 620px; margin: 0 auto 1.6rem; text-align: center; font-size: 0.78rem; line-height: 1.8; color: rgba(245,230,200,0.45); }
         .splash-controls strong { color: rgba(212,168,67,0.7); font-weight: 600; }
-        .btn-enter { font-family: 'Cinzel', serif; font-size: 0.9rem; letter-spacing: 0.2em; padding: 0.9em 2.8em; background: transparent; border: 1px solid #d4a843; color: #d4a843; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; }
-        .btn-enter:hover { background: #d4a843; color: #1a1208; }
+        .expo-grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; margin: 2rem 0 1.25rem; }
+        .expo-card { text-align: left; padding: 1.15rem 1.2rem; border-radius: 24px; border: 1px solid rgba(212,168,67,0.18); background: rgba(245,230,200,0.03); color: #f5e6c8; cursor: pointer; transition: transform 0.2s ease, border-color 0.2s ease, background 0.2s ease, box-shadow 0.2s ease; min-height: 168px; }
+        .expo-card:hover { transform: translateY(-2px); border-color: rgba(212,168,67,0.52); background: rgba(212,168,67,0.08); box-shadow: 0 16px 40px rgba(0,0,0,0.22); }
+        .expo-card.active { border-color: #d4a843; background: linear-gradient(180deg, rgba(212,168,67,0.18) 0%, rgba(212,168,67,0.05) 100%); box-shadow: 0 18px 44px rgba(0,0,0,0.28); }
+        .expo-kicker { font-size: 0.66rem; letter-spacing: 0.22em; text-transform: uppercase; color: rgba(212,168,67,0.78); margin-bottom: 0.55rem; }
+        .expo-name { font-family: 'Cinzel', serif; font-size: 1rem; color: #f5e6c8; margin-bottom: 0.55rem; }
+        .expo-copy { font-size: 0.82rem; line-height: 1.7; color: rgba(245,230,200,0.7); margin-bottom: 0.8rem; }
+        .expo-meta { font-size: 0.7rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(245,230,200,0.44); }
+        .splash-start-note { margin-bottom: 1.1rem; font-size: 0.78rem; letter-spacing: 0.14em; text-transform: uppercase; color: rgba(245,230,200,0.54); }
+        .btn-enter { font-family: 'Cinzel', serif; font-size: 0.9rem; letter-spacing: 0.2em; padding: 0.9em 2.8em; background: rgba(212,168,67,0.08); border: 1px solid #d4a843; color: #d4a843; cursor: pointer; transition: all 0.3s ease; text-transform: uppercase; min-height: 48px; border-radius: 999px; box-shadow: 0 16px 40px rgba(0,0,0,0.35); }
+        .btn-enter:hover { background: #d4a843; color: #1a1208; transform: translateY(-1px); }
 
         /* HUD */
         #hud { position: fixed; inset: 0; z-index: 100; pointer-events: none; }
-        .hud-top { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; padding: 1rem 1.5rem; background: linear-gradient(180deg, rgba(20,15,8,0.92) 0%, transparent 100%); }
+        .hud-top { position: absolute; top: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: space-between; gap: 1rem; flex-wrap: wrap; padding: 1rem 1.25rem; background: linear-gradient(180deg, rgba(20,15,8,0.94) 0%, rgba(20,15,8,0.45) 68%, transparent 100%); backdrop-filter: blur(10px); }
         .hud-brand { font-family: 'Cinzel', serif; font-size: 1rem; font-weight: 600; letter-spacing: 0.15em; color: #d4a843; }
         .hud-brand span { font-weight: 400; color: rgba(245,230,200,0.6); }
-        .hud-controls { display: flex; gap: 0.75rem; pointer-events: all; align-items: center; }
-        .hud-btn { background: rgba(20,15,8,0.85); border: 1px solid rgba(212,168,67,0.35); color: rgba(245,230,200,0.85); font-size: 0.75rem; letter-spacing: 0.1em; padding: 0.4em 1em; cursor: pointer; transition: all 0.2s; font-family: 'Lato', sans-serif; }
-        .hud-btn:hover { border-color: #d4a843; color: #d4a843; background: rgba(212,168,67,0.1); }
+        .hud-status { font-size: 0.7rem; letter-spacing: 0.12em; text-transform: uppercase; color: rgba(245,230,200,0.46); margin-top: 0.35rem; }
+        .hud-controls { display: flex; gap: 0.75rem; pointer-events: all; align-items: center; flex-wrap: wrap; justify-content: flex-end; }
+        .hud-btn { display: inline-flex; align-items: center; justify-content: center; gap: 0.45rem; min-height: 44px; background: rgba(20,15,8,0.96); border: 1px solid rgba(212,168,67,0.45); color: rgba(245,230,200,0.92); font-size: 0.78rem; font-weight: 700; letter-spacing: 0.08em; padding: 0.55em 1.15em; cursor: pointer; transition: all 0.2s; font-family: 'Lato', sans-serif; border-radius: 999px; box-shadow: 0 10px 30px rgba(0,0,0,0.32); }
+        .hud-btn:hover { border-color: #d4a843; color: #d4a843; background: rgba(212,168,67,0.12); transform: translateY(-1px); }
         .hud-btn.active { background: rgba(212,168,67,0.18); border-color: #d4a843; color: #d4a843; }
-        .hud-bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: center; padding: 1rem; background: linear-gradient(0deg, rgba(20,15,8,0.85) 0%, transparent 100%); }
-        .hud-tip { font-size: 0.72rem; letter-spacing: 0.12em; color: rgba(245,230,200,0.45); text-transform: uppercase; }
+        .hud-btn.subtle { opacity: 0.82; }
+        .hud-btn.subtle:hover { opacity: 1; }
+        .hud-bottom { position: absolute; bottom: 0; left: 0; right: 0; display: flex; align-items: center; justify-content: center; padding: 1rem 1.25rem 1.1rem; background: linear-gradient(0deg, rgba(20,15,8,0.88) 0%, transparent 100%); }
+        .hud-tip { font-size: 0.76rem; letter-spacing: 0.11em; color: rgba(245,230,200,0.56); text-transform: uppercase; padding: 0.75rem 1rem; border: 1px solid rgba(212,168,67,0.22); border-radius: 999px; background: rgba(20,15,8,0.76); backdrop-filter: blur(6px); text-align: center; max-width: min(960px, 92vw); }
         .hud-tip strong { color: rgba(212,168,67,0.75); font-weight: 400; }
+
+        #quick-guide { position: fixed; left: 1rem; bottom: 1rem; z-index: 160; width: min(420px, calc(100vw - 2rem)); pointer-events: all; opacity: 0; transform: translateY(16px); transition: opacity 0.24s ease, transform 0.24s ease; }
+        #quick-guide.open { opacity: 1; transform: translateY(0); }
+        .quick-card { border-radius: 24px; border: 1px solid rgba(212,168,67,0.22); background: linear-gradient(180deg, rgba(26,18,8,0.96) 0%, rgba(19,23,34,0.96) 100%); box-shadow: 0 22px 60px rgba(0,0,0,0.42); overflow: hidden; }
+        .quick-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 1rem; padding: 1rem 1rem 0.8rem; border-bottom: 1px solid rgba(212,168,67,0.12); }
+        .quick-title { font-family: 'Cinzel', serif; font-size: 0.92rem; color: #f5e6c8; }
+        .quick-sub { margin-top: 0.35rem; font-size: 0.75rem; line-height: 1.6; color: rgba(245,230,200,0.58); }
+        .quick-body { padding: 0.9rem 1rem 1rem; display: grid; gap: 0.8rem; }
+        .quick-row { padding: 0.8rem 0.85rem; border-radius: 16px; border: 1px solid rgba(212,168,67,0.12); background: rgba(245,230,200,0.03); }
+        .quick-row strong { display: block; margin-bottom: 0.25rem; font-size: 0.72rem; letter-spacing: 0.13em; text-transform: uppercase; color: #d4a843; }
+        .quick-row span { font-size: 0.78rem; line-height: 1.7; color: rgba(245,230,200,0.72); }
+        .quick-actions { display: flex; gap: 0.6rem; }
 
         /* FUSE PROGRESS RING — shown around crosshair when gazing at object */
         #gaze-ring { position: fixed; top: 50%; left: 50%; transform: translate(-50%,-50%); width: 44px; height: 44px; pointer-events: none; z-index: 91; opacity: 0; transition: opacity 0.1s; }
@@ -49,9 +78,9 @@
         .ch-dot { position:absolute; top:50%; left:50%; width:4px; height:4px; border-radius:50%; background:#d4a843; transform:translate(-50%,-50%); }
 
         /* SEARCH */
-        #search-wrap { position:fixed; inset:0; z-index:500; display:none; align-items:flex-start; justify-content:center; background:rgba(10,8,4,0.78); backdrop-filter:blur(6px); padding-top:110px; }
+        #search-wrap { position:fixed; inset:0; z-index:500; display:none; align-items:flex-start; justify-content:center; background:rgba(10,8,4,0.78); backdrop-filter:blur(6px); padding:90px 1rem 1rem; }
         #search-wrap.open { display:flex; }
-        .search-box { width:min(600px,90vw); background:#1e160a; border:1px solid rgba(212,168,67,0.4); box-shadow:0 20px 60px rgba(0,0,0,0.6); }
+        .search-box { width:min(680px,96vw); background:#1e160a; border:1px solid rgba(212,168,67,0.4); box-shadow:0 20px 60px rgba(0,0,0,0.6); border-radius:24px; overflow:hidden; }
         .search-hdr { padding:1.1rem 1.4rem 0.8rem; border-bottom:1px solid rgba(212,168,67,0.12); display:flex; align-items:center; gap:1rem; }
         #search-input { flex:1; background:none; border:none; outline:none; font-family:'Lato',sans-serif; font-size:1rem; color:#f5e6c8; }
         #search-input::placeholder { color:rgba(245,230,200,0.3); }
@@ -73,7 +102,7 @@
         .s-empty { padding:1.5rem; text-align:center; font-size:0.85rem; color:rgba(245,230,200,0.3); }
 
         /* INFO PANEL */
-        #info-panel { position:fixed; right:0; top:0; bottom:0; width:320px; z-index:200; background:linear-gradient(180deg,#1a1208 0%,#12161e 100%); border-left:1px solid rgba(212,168,67,0.22); transform:translateX(100%); transition:transform 0.38s cubic-bezier(0.16,1,0.3,1); pointer-events:all; overflow-y:auto; display:flex; flex-direction:column; }
+        #info-panel { position:fixed; right:0; top:0; bottom:0; width:360px; z-index:200; background:linear-gradient(180deg,#1a1208 0%,#12161e 100%); border-left:1px solid rgba(212,168,67,0.22); transform:translateX(100%); transition:transform 0.38s cubic-bezier(0.16,1,0.3,1); pointer-events:all; overflow-y:auto; display:flex; flex-direction:column; box-shadow:-12px 0 40px rgba(0,0,0,0.3); }
         #info-panel.open { transform:translateX(0); }
         .p-hdr { padding:1.4rem; border-bottom:1px solid rgba(212,168,67,0.15); display:flex; align-items:flex-start; justify-content:space-between; }
         .p-tag { font-size:0.63rem; letter-spacing:0.25em; text-transform:uppercase; color:#d4a843; margin-bottom:0.45rem; }
@@ -87,25 +116,34 @@
         .p-desc  { font-size:0.84rem; line-height:1.75; color:rgba(245,230,200,0.66); border-top:1px solid rgba(212,168,67,0.1); padding-top:1rem; margin-bottom:1.4rem; }
         .p-kws   { display:flex; flex-wrap:wrap; gap:0.35rem; margin-bottom:1.4rem; }
         .kw      { font-size:0.63rem; letter-spacing:0.1em; text-transform:uppercase; padding:0.22em 0.7em; border:1px solid rgba(212,168,67,0.25); color:rgba(212,168,67,0.75); }
+        .p-actions { display:grid; gap:0.65rem; }
         .btn-save { width:100%; padding:0.82em; font-family:'Cinzel',serif; font-size:0.78rem; letter-spacing:0.15em; text-transform:uppercase; background:transparent; border:1px solid #d4a843; color:#d4a843; cursor:pointer; transition:all 0.2s; }
         .btn-save:hover { background:#d4a843; color:#1a1208; }
         .btn-save.saved { background:rgba(212,168,67,0.1); color:rgba(212,168,67,0.5); border-color:rgba(212,168,67,0.22); cursor:default; }
+        .btn-secondary { width:100%; padding:0.82em; font-family:'Lato',sans-serif; font-size:0.78rem; font-weight:700; letter-spacing:0.12em; text-transform:uppercase; background:rgba(245,230,200,0.06); border:1px solid rgba(245,230,200,0.18); color:rgba(245,230,200,0.88); cursor:pointer; transition:all 0.2s; }
+        .btn-secondary:hover { border-color:rgba(212,168,67,0.6); color:#d4a843; background:rgba(212,168,67,0.08); }
+        .btn-secondary:disabled { cursor:not-allowed; opacity:0.5; }
+        .p-note { margin-top:0.85rem; font-size:0.74rem; line-height:1.65; color:rgba(245,230,200,0.48); }
 
         /* COLLECTION PANEL */
-        #coll-panel { position:fixed; left:0; top:0; bottom:0; width:295px; z-index:200; background:#1a1208; border-right:1px solid rgba(212,168,67,0.22); transform:translateX(-100%); transition:transform 0.38s cubic-bezier(0.16,1,0.3,1); pointer-events:all; overflow-y:auto; }
+        #coll-panel { position:fixed; left:0; top:0; bottom:0; width:340px; z-index:200; background:#1a1208; border-right:1px solid rgba(212,168,67,0.22); transform:translateX(-100%); transition:transform 0.38s cubic-bezier(0.16,1,0.3,1); pointer-events:all; overflow-y:auto; box-shadow:12px 0 40px rgba(0,0,0,0.3); }
         #coll-panel.open { transform:translateX(0); }
         .c-hdr { padding:1.4rem; border-bottom:1px solid rgba(212,168,67,0.15); }
         .c-title { font-family:'Cinzel',serif; font-size:0.95rem; color:#d4a843; letter-spacing:0.1em; }
         .c-count { font-size:0.71rem; color:rgba(245,230,200,0.38); margin-top:0.22rem; }
         #coll-list { padding:0.9rem; }
-        .c-item { padding:0.8rem; border:1px solid rgba(212,168,67,0.14); margin-bottom:0.45rem; cursor:pointer; transition:all 0.18s; }
+        .c-item { padding:0.95rem; border:1px solid rgba(212,168,67,0.14); margin-bottom:0.65rem; transition:all 0.18s; border-radius:18px; background:rgba(245,230,200,0.02); }
         .c-item:hover { border-color:rgba(212,168,67,0.42); background:rgba(212,168,67,0.04); }
         .c-item-name { font-family:'Cinzel',serif; font-size:0.8rem; color:#f5e6c8; margin-bottom:0.18rem; }
         .c-item-sub  { font-size:0.69rem; color:rgba(245,230,200,0.38); }
+        .c-actions { display:flex; gap:0.55rem; margin-top:0.8rem; }
+        .c-btn { flex:1; min-height:40px; padding:0.72em 0.9em; border-radius:999px; border:1px solid rgba(245,230,200,0.16); background:rgba(245,230,200,0.05); color:#f5e6c8; cursor:pointer; text-transform:uppercase; letter-spacing:0.09em; font-size:0.68rem; font-weight:700; transition:all 0.18s; }
+        .c-btn:hover { border-color:rgba(212,168,67,0.55); color:#d4a843; background:rgba(212,168,67,0.08); }
+        .c-btn.primary { border-color:rgba(212,168,67,0.38); background:rgba(212,168,67,0.12); color:#d4a843; }
         .c-empty { padding:2rem 1rem; text-align:center; font-size:0.81rem; color:rgba(245,230,200,0.28); line-height:1.7; }
 
         /* TOAST */
-        #toast { position:fixed; bottom:5rem; left:50%; transform:translateX(-50%) translateY(18px); background:rgba(212,168,67,0.97); color:#1a1208; font-size:0.79rem; letter-spacing:0.07em; padding:0.72em 1.4em; opacity:0; transition:all 0.28s ease; pointer-events:none; z-index:999; white-space:nowrap; }
+        #toast { position:fixed; bottom:5rem; left:50%; transform:translateX(-50%) translateY(18px); background:rgba(212,168,67,0.97); color:#1a1208; font-size:0.79rem; letter-spacing:0.07em; padding:0.72em 1.4em; opacity:0; transition:all 0.28s ease; pointer-events:none; z-index:999; white-space:nowrap; border-radius:999px; box-shadow:0 18px 40px rgba(0,0,0,0.35); max-width:calc(100vw - 2rem); overflow:hidden; text-overflow:ellipsis; }
         #toast.show { opacity:1; transform:translateX(-50%) translateY(0); }
 
         /* TELEPORT FLASH */
@@ -113,27 +151,89 @@
         #tp-flash.flash { opacity:0.45; }
 
         .badge { display:inline-flex; align-items:center; justify-content:center; width:17px; height:17px; border-radius:50%; background:#d4a843; color:#1a1208; font-size:0.63rem; font-weight:700; margin-left:0.35rem; vertical-align:middle; }
+
+        .modal { position:fixed; inset:0; z-index:700; display:none; align-items:center; justify-content:center; padding:1.2rem; background:rgba(8,8,10,0.72); backdrop-filter:blur(10px); }
+        .modal.open { display:flex; }
+        .help-card { width:min(920px,100%); border:1px solid rgba(212,168,67,0.22); border-radius:28px; overflow:hidden; box-shadow:0 28px 80px rgba(0,0,0,0.55); background:linear-gradient(180deg, rgba(24,18,12,0.96) 0%, rgba(15,19,28,0.96) 100%); }
+        .help-head, .inspect-head { display:flex; align-items:flex-start; justify-content:space-between; gap:1rem; padding:1.2rem 1.35rem; border-bottom:1px solid rgba(212,168,67,0.14); }
+        .modal-title { font-family:'Cinzel',serif; font-size:1.05rem; color:#f5e6c8; }
+        .modal-sub { margin-top:0.35rem; font-size:0.8rem; line-height:1.6; color:rgba(245,230,200,0.55); }
+        .modal-close { min-height:40px; padding:0.7em 1em; border-radius:999px; border:1px solid rgba(245,230,200,0.14); background:rgba(245,230,200,0.05); color:#f5e6c8; cursor:pointer; text-transform:uppercase; letter-spacing:0.08em; font-size:0.7rem; }
+        .modal-close:hover { border-color:rgba(212,168,67,0.55); color:#d4a843; }
+        .help-grid { display:grid; grid-template-columns:repeat(2, minmax(0, 1fr)); gap:1rem; padding:1.2rem; }
+        .help-block { padding:1rem; border-radius:18px; border:1px solid rgba(212,168,67,0.12); background:rgba(245,230,200,0.03); }
+        .help-title { font-family:'Cinzel',serif; font-size:0.88rem; color:#d4a843; margin-bottom:0.45rem; }
+        .help-body { font-size:0.8rem; line-height:1.75; color:rgba(245,230,200,0.7); }
+        #inspect-modal { display:none; padding:0; background:radial-gradient(circle at center, rgba(0,0,0,0.02) 0%, rgba(0,0,0,0.08) 28%, rgba(4,4,8,0.44) 64%, rgba(4,4,8,0.7) 100%); backdrop-filter:none; }
+        #inspect-modal.open { display:block; }
+        .inspect-ui { position:absolute; inset:0; }
+        .inspect-head { position:absolute; top:1rem; left:1rem; right:1rem; border:1px solid rgba(212,168,67,0.16); border-radius:22px; background:rgba(14,12,16,0.72); backdrop-filter:blur(8px); box-shadow:0 18px 40px rgba(0,0,0,0.24); pointer-events:none; }
+        .inspect-head > * { pointer-events:auto; }
+        .inspect-stage { position:absolute; inset:0; background:none; cursor:grab; }
+        .inspect-stage.dragging { cursor:grabbing; }
+        .inspect-copy { position:absolute; top:6.6rem; right:1rem; width:min(340px, calc(100vw - 2rem)); padding:0.85rem 0.95rem; border-radius:18px; border:1px solid rgba(212,168,67,0.16); background:rgba(14,12,16,0.72); backdrop-filter:blur(8px); font-size:0.74rem; line-height:1.7; color:rgba(245,230,200,0.62); box-shadow:0 14px 34px rgba(0,0,0,0.18); pointer-events:none; }
+        .inspect-controls { position:absolute; left:50%; bottom:1rem; transform:translateX(-50%); width:min(860px, calc(100vw - 2rem)); display:grid; grid-template-columns:repeat(5, minmax(0, 1fr)); gap:0.75rem; padding:0; border:0; background:none; pointer-events:auto; }
+
+        @media (max-width: 900px) {
+            #info-panel, #coll-panel { width:min(100vw, 420px); }
+            .help-grid { grid-template-columns:1fr; }
+            .hud-top { justify-content:center; }
+            .hud-controls { justify-content:center; }
+            .expo-grid { grid-template-columns:1fr; }
+            .inspect-copy { top:auto; left:1rem; right:1rem; bottom:6.7rem; width:auto; }
+            .inspect-controls { grid-template-columns:repeat(3, minmax(0, 1fr)); }
+        }
+
+        @media (max-width: 640px) {
+            .hud-top { padding:0.85rem; }
+            .hud-controls { width:100%; }
+            .hud-btn { width:100%; }
+            #info-panel, #coll-panel { width:100%; }
+            .search-box, .help-card { border-radius:20px; }
+            .inspect-head { top:0.75rem; left:0.75rem; right:0.75rem; }
+            .inspect-copy { left:0.75rem; right:0.75rem; bottom:6.1rem; }
+            .inspect-controls { width:calc(100vw - 1.5rem); bottom:0.75rem; grid-template-columns:repeat(2, minmax(0, 1fr)); }
+            .quick-actions { flex-direction:column; }
+            .hud-tip { border-radius:24px; white-space:normal; }
+        }
     </style>
 </head>
 <body>
 
 <!-- SPLASH -->
 <div id="splash">
-    <div class="splash-logo">VR Memory</div>
-    <div class="splash-sub">Centro Digital Imersivo</div>
-    <div class="splash-deco"></div>
-    <p class="splash-desc">Explore e preserve a memória histórico-cultural de povos indígenas em realidade virtual.</p>
-    <p class="splash-controls">
-        <strong>Mouse</strong> — olhar ao redor &nbsp;·&nbsp; <strong>WASD</strong> — andar<br>
-        <strong>Olhar fixo</strong> no objeto por 1,5s — interagir &nbsp;·&nbsp; <strong>Ctrl+K</strong> — buscar
-    </p>
-    <button class="btn-enter" onclick="enterExperience()">Entrar na Exposição</button>
+    <div class="splash-shell">
+        <div class="splash-logo">VR Memory</div>
+        <div class="splash-sub">Centro Digital Imersivo</div>
+        <div class="splash-deco"></div>
+        <p class="splash-desc">Explore e preserve a memória histórico-cultural de povos indígenas em realidade virtual. Escolha por qual acervo deseja começar e entre direto no recorte expositivo mais relevante para a apresentação.</p>
+        <p class="splash-controls">
+            <strong>Mouse</strong> — olhar ao redor &nbsp;·&nbsp; <strong>WASD</strong> — caminhar<br>
+            <strong>Olhar fixo</strong> 1,4s — detalhes &nbsp;·&nbsp; <strong>Olhar prolongado</strong> 2,6s — inspecionar &nbsp;·&nbsp; <strong>Ctrl+K</strong> — buscar
+        </p>
+        <div class="expo-grid">
+            <button class="expo-card active" id="start-sala1" onclick="selectStartRoom('sala1')" aria-pressed="true" aria-label="Começar pela Exposição Marajó">
+                <div class="expo-kicker">Entrada 01</div>
+                <div class="expo-name">Exposição Marajó</div>
+                <div class="expo-copy">Cerâmica, rituais funerários e cosmologia dos povos da Ilha de Marajó. Entrada mais direta e acolhedora para o protótipo.</div>
+                <div class="expo-meta">Urnas, máscaras e vasos cerimoniais</div>
+            </button>
+            <button class="expo-card" id="start-sala2" onclick="selectStartRoom('sala2')" aria-pressed="false" aria-label="Começar pelo Acervo Tupi-Guarani">
+                <div class="expo-kicker">Entrada 02</div>
+                <div class="expo-name">Acervo Tupi-Guarani</div>
+                <div class="expo-copy">Objetos, adornos e arte dos povos de língua Tupi-Guarani, com atmosfera visual mais fria e foco em arqueologia e cultura material.</div>
+                <div class="expo-meta">Grafismos, petroglifos e adornos</div>
+            </button>
+        </div>
+        <div class="splash-start-note">Entrada inicial selecionada: <strong id="start-room-label">Exposição Marajó</strong></div>
+        <button class="btn-enter" onclick="enterExperience()" aria-label="Entrar na exposição virtual escolhida">Entrar na Exposição Escolhida</button>
+    </div>
 </div>
 
 <!-- CROSSHAIR -->
 <div class="crosshair"><div class="ch-dot"></div></div>
 
-<!-- GAZE RING (fuse progress) -->
+<!-- GAZE RING (hover progress) -->
 <div id="gaze-ring">
     <svg viewBox="0 0 44 44">
         <circle cx="22" cy="22" r="18" fill="none" stroke="rgba(212,168,67,0.25)" stroke-width="3"/>
@@ -147,25 +247,59 @@
 <!-- HUD -->
 <div id="hud">
     <div class="hud-top">
-        <div class="hud-brand">VR Memory <span id="room-label">/ Exposição Marajó</span></div>
+        <div>
+            <div class="hud-brand">VR Memory <span id="room-label">/ Exposição Marajó</span></div>
+            <div class="hud-status">Protótipo navegável com coleção e exame de artefatos</div>
+        </div>
         <div class="hud-controls">
-            <button class="hud-btn" onclick="openSearch()">🔍 Buscar <span style="opacity:.4;font-size:.65em">Ctrl+K</span></button>
-            <button class="hud-btn" id="btn-coll" onclick="toggleColl()">Minha Coleção <span id="badge" class="badge" style="display:none">0</span></button>
-            <button class="hud-btn" onclick="window.location.href='curadoria.html'">Painel do Curador</button>
+            <button class="hud-btn" onclick="openSearch()" aria-label="Buscar coleções e artefatos">Buscar <span style="opacity:.55;font-size:.7em">Ctrl+K</span></button>
+            <button class="hud-btn" id="btn-coll" onclick="toggleColl()" aria-label="Abrir minha coleção">Minha Coleção <span id="badge" class="badge" style="display:none">0</span></button>
+            <button class="hud-btn" onclick="openHelp()" aria-label="Abrir guia rápido do protótipo">Guia Rápido</button>
+            <button class="hud-btn subtle" onclick="openCuratorHint()" aria-label="Informações sobre o painel do curador">Painel do Curador</button>
         </div>
     </div>
     <div class="hud-bottom">
-        <div class="hud-tip"><strong>Mouse</strong> Olhar &nbsp;·&nbsp; <strong>WASD</strong> Andar &nbsp;·&nbsp; <strong>Olhar fixo 1.5s</strong> Interagir &nbsp;·&nbsp; <strong>Ctrl+K</strong> Buscar</div>
+        <div class="hud-tip"><strong>Mouse</strong> Olhar &nbsp;·&nbsp; <strong>WASD</strong> Caminhar &nbsp;·&nbsp; <strong>1.4s</strong> Detalhes &nbsp;·&nbsp; <strong>2.6s</strong> Examinar &nbsp;·&nbsp; <strong>F1</strong> Ajuda</div>
+    </div>
+</div>
+
+<div id="quick-guide" aria-live="polite" aria-hidden="true">
+    <div class="quick-card">
+        <div class="quick-head">
+            <div>
+                <div class="quick-title">Atalhos e Interação</div>
+                <div class="quick-sub">Este aviso fica aberto até você fechar. Use-o como lembrete rápido durante a apresentação.</div>
+            </div>
+            <button class="modal-close" onclick="closeQuickGuide()" aria-label="Fechar lembrete inicial">Fechar</button>
+        </div>
+        <div class="quick-body">
+            <div class="quick-row">
+                <strong>Navegação</strong>
+                <span>Use <strong>Mouse</strong> para olhar ao redor e <strong>WASD</strong> para caminhar. As salas estão limitadas para o visitante não sair da exposição.</span>
+            </div>
+            <div class="quick-row">
+                <strong>Olhar</strong>
+                <span>Olhar fixo por <strong>1,4s</strong> abre os detalhes. Olhar prolongado por <strong>2,6s</strong> entra direto no modo de inspeção aproximada.</span>
+            </div>
+            <div class="quick-row">
+                <strong>Atalhos</strong>
+                <span><strong>Ctrl+K</strong> busca, <strong>F1</strong> abre o guia e <strong>Esc</strong> fecha painéis e o modo de exame.</span>
+            </div>
+            <div class="quick-actions">
+                <button class="c-btn primary" onclick="openHelp()">Abrir Guia Completo</button>
+                <button class="c-btn" onclick="closeQuickGuide()">Continuar</button>
+            </div>
+        </div>
     </div>
 </div>
 
 <!-- SEARCH -->
-<div id="search-wrap" onclick="overlayClick(event)">
+<div id="search-wrap" onclick="overlayClick(event)" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Busca do acervo">
     <div class="search-box">
         <div class="search-hdr">
             <span style="color:#d4a843">🔍</span>
-            <input id="search-input" type="text" placeholder="Buscar coleção ou artefato..." oninput="onSearch(this.value)" autocomplete="off">
-            <button class="s-close" onclick="closeSearch()">✕</button>
+            <input id="search-input" type="text" placeholder="Buscar coleção ou artefato..." oninput="onSearch(this.value)" autocomplete="off" aria-label="Buscar coleção ou artefato">
+            <button class="s-close" onclick="closeSearch()" aria-label="Fechar busca">✕</button>
         </div>
         <div class="s-hint">Digite para filtrar · Enter para ir ao primeiro resultado · Esc para fechar</div>
         <div id="search-results"></div>
@@ -173,10 +307,10 @@
 </div>
 
 <!-- INFO PANEL -->
-<div id="info-panel">
+<div id="info-panel" aria-label="Painel do artefato" aria-hidden="true">
     <div class="p-hdr">
         <div><div class="p-tag" id="p-cat"></div><div class="p-title" id="p-name"></div></div>
-        <button class="p-close" onclick="closePanel()">✕</button>
+        <button class="p-close" onclick="closePanel()" aria-label="Fechar painel do artefato">✕</button>
     </div>
     <div class="p-body">
         <div class="p-meta">
@@ -187,17 +321,72 @@
         </div>
         <div class="p-desc" id="p-desc"></div>
         <div class="p-kws" id="p-kws"></div>
-        <button class="btn-save" id="btn-save" onclick="saveItem()">＋ Salvar na Minha Coleção</button>
+        <div class="p-actions">
+            <button class="btn-save" id="btn-save" onclick="saveItem()">＋ Salvar na Minha Coleção</button>
+            <button class="btn-secondary" id="btn-inspect" onclick="inspectCurrentItem()">Examinar Agora</button>
+        </div>
+        <div class="p-note" id="p-note">O exame aproximado ja esta disponivel. Salvar continua opcional para montar sua colecao pessoal.</div>
     </div>
 </div>
 
 <!-- COLLECTION PANEL -->
-<div id="coll-panel">
+<div id="coll-panel" aria-label="Minha coleção" aria-hidden="true">
     <div class="c-hdr"><div class="c-title">Minha Coleção</div><div class="c-count" id="c-count">0 itens</div></div>
-    <div id="coll-list"><div class="c-empty">Nenhum artefato salvo.<br><br>Olhe fixo para um objeto por 1,5 segundo para abrir seu painel.</div></div>
+    <div id="coll-list"><div class="c-empty">Nenhum artefato salvo.<br><br>Salve artefatos para montar uma colecao pessoal, mas voce ja pode inspecionar qualquer item diretamente na exposicao.</div></div>
 </div>
 
-<div id="toast"></div>
+<div id="help-modal" class="modal" onclick="overlayClickHelp(event)" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Guia rápido do protótipo">
+    <div class="help-card">
+        <div class="help-head">
+            <div>
+                <div class="modal-title">Guia Rápido</div>
+                <div class="modal-sub">Resumo dos controles, fluxo da coleção e melhorias de acessibilidade deste protótipo.</div>
+            </div>
+            <button class="modal-close" onclick="closeHelp()" aria-label="Fechar guia rápido">Fechar</button>
+        </div>
+        <div class="help-grid">
+            <div class="help-block">
+                <div class="help-title">Navegação</div>
+                <div class="help-body">Use o mouse para olhar ao redor e <strong>WASD</strong> para caminhar. As salas agora possuem limites, então a navegação fica contida dentro da exposição.</div>
+            </div>
+            <div class="help-block">
+                <div class="help-title">Interação</div>
+                <div class="help-body">Mantenha o olhar por 1,4 segundo sobre um artefato para abrir os detalhes. Se prolongar o olhar por 2,6 segundos, o modo de exame abre automaticamente. Os pads luminosos fazem o teleporte entre as duas salas.</div>
+            </div>
+            <div class="help-block">
+                <div class="help-title">Coleção e Exame</div>
+                <div class="help-body">Voce pode inspecionar qualquer item na hora. Salvar continua util para reunir favoritos em <strong>Minha Coleção</strong> e reabrir o exame depois.</div>
+            </div>
+            <div class="help-block">
+                <div class="help-title">Atalhos</div>
+                <div class="help-body"><strong>Ctrl+K</strong> abre a busca, <strong>F1</strong> abre este guia e <strong>Esc</strong> fecha busca, painéis e modo de exame.</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div id="inspect-modal" class="modal" onclick="overlayClickInspect(event)" role="dialog" aria-modal="true" aria-hidden="true" aria-label="Modo de exame do item">
+    <div class="inspect-ui">
+        <div class="inspect-head">
+            <div>
+                <div class="modal-title" id="inspect-title">Modo de Exame</div>
+                <div class="modal-sub" id="inspect-sub">Gire, aproxime e observe o artefato com mais detalhe.</div>
+            </div>
+            <button class="modal-close" onclick="closeInspect()" aria-label="Fechar modo de exame">Fechar</button>
+        </div>
+        <div class="inspect-copy">Arraste em qualquer parte livre da tela para girar. Use os botões abaixo, <strong>A/D</strong> ou as setas para rotacionar. Use <strong>+</strong> e <strong>-</strong> para aproximar ou afastar.</div>
+        <div class="inspect-stage" id="inspect-stage"></div>
+        <div class="inspect-controls">
+            <button class="c-btn" onclick="rotateInspect(-16)">Girar Esquerda</button>
+            <button class="c-btn" onclick="rotateInspect(16)">Girar Direita</button>
+            <button class="c-btn" onclick="adjustInspectZoom(0.16)">Aproximar</button>
+            <button class="c-btn" onclick="adjustInspectZoom(-0.16)">Afastar</button>
+            <button class="c-btn primary" onclick="resetInspectView()">Resetar</button>
+        </div>
+    </div>
+</div>
+
+<div id="toast" aria-live="polite" aria-atomic="true"></div>
 
 <!-- ════════════════════════════════════════════════
      A-FRAME SCENE
@@ -219,21 +408,25 @@
         look-controls WITHOUT pointerLockEnabled so regular mouse clicks work.
     -->
     <a-camera id="cam"
-        position="0 1.65 3"
+        position="0 1.65 -2.6"
         look-controls="pointerLockEnabled: false; magicWindowTrackingEnabled: false"
-        wasd-controls="acceleration: 30">
+        wasd-controls="acceleration: 38">
         <!--
-            Fuse cursor: fires 'click' on .interativo after 1500ms of gaze.
-            We also keep mouse click via the scene's cursor="rayOrigin: mouse".
+            Mouse click remains immediate.
+            Hover timing for details and inspection is handled in JS.
         -->
         <a-cursor
             id="cursor"
             color="#d4a843"
             opacity="0"
-            fuse="true"
-            fuse-timeout="1500"
             raycaster="objects: .interativo; far: 16">
         </a-cursor>
+        <a-entity id="inspect-anchor" position="0 -0.05 -1.8" visible="false">
+            <a-light type="ambient" intensity="0.9" color="#fff4d6"></a-light>
+            <a-light type="point" intensity="1.6" position="0 0.4 1.1" color="#fff0c0" distance="6"></a-light>
+            <a-light type="point" intensity="0.7" position="-0.8 -0.3 1.2" color="#90b8ff" distance="5"></a-light>
+            <a-entity id="inspect-item-root"></a-entity>
+        </a-entity>
     </a-camera>
 
     <!-- ═══════ GLOBAL LIGHTS ═══════ -->
@@ -247,7 +440,7 @@
     <a-sky color="#4a3520"></a-sky>
 
     <!-- ════════════════════════════════════════
-         SALA 1 — ACERVO MARAJÓ  (cam start z=3, room z: 0 to -20)
+         SALA 1 — ACERVO MARAJÓ  (cam start z=-2.6, room z: 0 to -20)
     ════════════════════════════════════════ -->
     <a-light type="point" intensity="5"   position="0  7  -8"  color="#ffe090" distance="26" decay="1.2"></a-light>
     <a-light type="point" intensity="3"   position="-8 5  -8"  color="#ffcc70" distance="15" decay="1.5"></a-light>
@@ -259,6 +452,7 @@
     <a-light type="point" intensity="2"   position="11  7 -15" color="#ffe090" distance="10" decay="2"></a-light>
 
     <!-- Walls -->
+    <a-box position="0 4.5 0"    width="28" height="9" depth="0.4" color="#4a3520"></a-box>
     <a-box position="0 4.5 -20"  width="28" height="9" depth="0.4" color="#4a3520"></a-box>
     <a-box position="-14 4.5 -10" width="0.4" height="9" depth="20" color="#3d2c15"></a-box>
     <a-box position="14  4.5 -10" width="0.4" height="9" depth="20" color="#3d2c15"></a-box>
@@ -373,6 +567,7 @@
              src="#floor-tex" repeat="8 7" material="color:#283050;roughness:0.85"></a-plane>
 
     <!-- Walls sala 2 -->
+    <a-box position="0 4.5 -22"  width="28" height="9" depth="0.4" color="#1e2840"></a-box>
     <a-box position="0 4.5 -43"  width="28" height="9" depth="0.4" color="#1e2840"></a-box>
     <a-box position="-14 4.5 -32" width="0.4" height="9" depth="22" color="#18213a"></a-box>
     <a-box position="14  4.5 -32" width="0.4" height="9" depth="22" color="#18213a"></a-box>
@@ -505,314 +700,796 @@
 </a-scene>
 
 <script>
-// ══════════════════════════════════════════
-// STATE
-// ══════════════════════════════════════════
+const STORAGE_KEY = 'vr-memory-saved-v1';
+const DETAIL_GAZE_MS = 1400;
+const INSPECT_GAZE_MS = 2600;
+const TOAST_MS = 3000;
+const NAV_ACCELERATION = 38;
+const INSPECT_ROTATE_SENSITIVITY = 0.62;
+const INSPECT_PITCH_SENSITIVITY = 0.26;
+const INSPECT_ROTATE_STEP = 18;
+const INSPECT_ZOOM_STEP = 0.18;
+
 const saved = [];
 let current = null;
 let searchIdx = [];
+let activeRoom = 'sala1';
+let startRoom = 'sala1';
 
 const ROOMS = {
-    sala1: { x: 0,   z: 3,   label: '/ Exposição Marajó' },
-    sala2: { x: 0,   z: -21, label: '/ Acervo Tupi-Guarani' }
+    sala1: {
+        x: 0,
+        z: -2.6,
+        label: '/ Exposição Marajó',
+        name: 'Exposição Marajó',
+        status: 'Cerâmicas, rituais e cosmologia da Ilha de Marajó'
+    },
+    sala2: {
+        x: 0,
+        z: -24.5,
+        label: '/ Acervo Tupi-Guarani',
+        name: 'Acervo Tupi-Guarani',
+        status: 'Grafismos, arqueologia e cultura material Tupi-Guarani'
+    }
 };
 
-// ══════════════════════════════════════════
-// FUSE GAZE ANIMATION
-// ══════════════════════════════════════════
-const gazeRing = document.getElementById('gaze-ring');
-const gazeArc  = document.getElementById('gaze-arc');
-let gazeTimer  = null;
-let gazeStart  = null;
-const FUSE_MS  = 1500;
+const ROOM_BOUNDS = {
+    sala1: { minX: -12.4, maxX: 12.4, minZ: -19.15, maxZ: -1.15 },
+    sala2: { minX: -12.4, maxX: 12.4, minZ: -41.3, maxZ: -22.95 }
+};
 
-function startGaze() {
-    gazeRing.classList.add('active');
-    gazeStart = performance.now();
-    animateGaze();
+const inspectState = {
+    open: false,
+    item: null,
+    dragging: false,
+    lastX: 0,
+    lastY: 0,
+    rotX: 8,
+    rotY: 0,
+    distance: -1.72
+};
+
+const hoverState = {
+    target: null,
+    isTeleport: false,
+    start: 0,
+    maxMs: DETAIL_GAZE_MS,
+    previewTimeout: null,
+    inspectTimeout: null,
+    previewOpened: false,
+    inspectItem: null
+};
+
+const gazeRing = document.getElementById('gaze-ring');
+const gazeArc = document.getElementById('gaze-arc');
+let gazeTimer = null;
+
+function clamp(value, min, max) {
+    return Math.max(min, Math.min(max, value));
 }
-function stopGaze() {
+
+function artifactFromElement(el) {
+    return { ...el.dataset, elId: el.id };
+}
+
+function isItemSaved(item) {
+    return !!item && saved.some(entry => entry.nome === item.nome);
+}
+
+function hideInfoPanel(resetCurrent) {
+    const panel = document.getElementById('info-panel');
+    panel.classList.remove('open');
+    panel.setAttribute('aria-hidden', 'true');
+    if (resetCurrent) current = null;
+}
+
+function stopGazeVisual() {
     gazeRing.classList.remove('active');
     gazeArc.style.strokeDashoffset = '113';
-    if (gazeTimer) { cancelAnimationFrame(gazeTimer); gazeTimer = null; }
-    gazeStart = null;
+    if (gazeTimer) {
+        cancelAnimationFrame(gazeTimer);
+        gazeTimer = null;
+    }
 }
+
+function cancelPendingInspect() {
+    clearTimeout(hoverState.inspectTimeout);
+    hoverState.inspectTimeout = null;
+    hoverState.inspectItem = null;
+    hoverState.previewOpened = false;
+}
+
+function stopGaze(targetEl) {
+    if (targetEl && hoverState.target && hoverState.target !== targetEl) return;
+
+    const keepInspect = hoverState.previewOpened &&
+        !hoverState.isTeleport &&
+        hoverState.inspectTimeout &&
+        current &&
+        hoverState.inspectItem &&
+        current.elId === hoverState.inspectItem.elId &&
+        !inspectState.open;
+
+    clearTimeout(hoverState.previewTimeout);
+    hoverState.previewTimeout = null;
+
+    if (!keepInspect) cancelPendingInspect();
+
+    hoverState.target = null;
+    hoverState.isTeleport = false;
+    hoverState.start = 0;
+    hoverState.maxMs = DETAIL_GAZE_MS;
+    stopGazeVisual();
+}
+
 function animateGaze() {
-    if (!gazeStart) return;
-    const elapsed = performance.now() - gazeStart;
-    const pct = Math.min(elapsed / FUSE_MS, 1);
+    if (!hoverState.start) return;
+    const elapsed = performance.now() - hoverState.start;
+    const pct = Math.min(elapsed / hoverState.maxMs, 1);
     gazeArc.style.strokeDashoffset = 113 * (1 - pct);
     if (pct < 1) gazeTimer = requestAnimationFrame(animateGaze);
 }
 
-// ══════════════════════════════════════════
-// INIT — bind events after scene loads
-// ══════════════════════════════════════════
+function startGaze(el, isTeleport) {
+    if (inspectState.open) return;
+    if (hoverState.target === el) return;
+
+    stopGaze();
+    cancelPendingInspect();
+    hoverState.target = el;
+    hoverState.isTeleport = isTeleport;
+    hoverState.start = performance.now();
+    hoverState.maxMs = isTeleport ? DETAIL_GAZE_MS : INSPECT_GAZE_MS;
+    hoverState.previewOpened = false;
+    hoverState.inspectItem = isTeleport ? null : artifactFromElement(el);
+
+    gazeRing.classList.add('active');
+    animateGaze();
+
+    hoverState.previewTimeout = setTimeout(() => {
+        hoverState.previewTimeout = null;
+        if (hoverState.target !== el || inspectState.open) return;
+
+        if (isTeleport) {
+            doTeleport(el.dataset.destino);
+            stopGaze();
+            return;
+        }
+
+        hoverState.previewOpened = true;
+        openArtifact(el, { source: 'gaze' });
+    }, DETAIL_GAZE_MS);
+
+    if (!isTeleport) {
+        hoverState.inspectTimeout = setTimeout(() => {
+            hoverState.inspectTimeout = null;
+            if (inspectState.open) return;
+            inspectItem(hoverState.inspectItem || artifactFromElement(el));
+        }, INSPECT_GAZE_MS);
+    }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
     const scene = document.querySelector('a-scene');
+    selectStartRoom(startRoom);
     scene.addEventListener('loaded', initEvents);
+    setupInspectStage();
 });
 
 function initEvents() {
+    if (initEvents.done) return;
+    initEvents.done = true;
+
     document.querySelectorAll('.interativo').forEach(el => {
-        const isTp = el.dataset.tipo === 'tp';
+        const isTeleport = el.dataset.tipo === 'tp';
 
-        // Fuse (gaze) start/end animation
-        el.addEventListener('mouseenter', startGaze);
-        el.addEventListener('mouseleave', stopGaze);
+        el.addEventListener('mouseenter', () => startGaze(el, isTeleport));
+        el.addEventListener('mouseleave', () => stopGaze(el));
 
-        // Hover scale for non-pads
-        if (!isTp) {
-            el.addEventListener('mouseenter', () => el.setAttribute('scale','1.1 1.1 1.1'));
-            el.addEventListener('mouseleave', () => el.setAttribute('scale','1 1 1'));
+        if (!isTeleport) {
+            el.addEventListener('mouseenter', () => el.setAttribute('scale', '1.1 1.1 1.1'));
+            el.addEventListener('mouseleave', () => el.setAttribute('scale', '1 1 1'));
         }
 
-        // Fuse fires a synthetic 'click' — handle both fuse AND mouse click
         el.addEventListener('click', () => {
-            stopGaze();
-            if (isTp) doTeleport(el.dataset.destino);
-            else      openArtifact(el);
+            stopGaze(el);
+            if (isTeleport) doTeleport(el.dataset.destino);
+            else openArtifact(el, { source: 'click' });
         });
     });
 
-    // Build search index
     const colsSeen = new Set();
+    searchIdx = [];
+
     document.querySelectorAll('.interativo[data-nome]').forEach(el => {
-        const d = el.dataset;
-        if (!colsSeen.has(d.colecao)) {
-            colsSeen.add(d.colecao);
-            searchIdx.push({ type:'colecao', nome: d.colecao, sala: d.sala });
+        const data = el.dataset;
+        if (!colsSeen.has(data.colecao)) {
+            colsSeen.add(data.colecao);
+            searchIdx.push({ type: 'colecao', nome: data.colecao, sala: data.sala });
         }
+
         searchIdx.push({
-            type:'artefato', nome: d.nome, cat: d.cat,
-            colecao: d.colecao, sala: d.sala,
-            camx: parseFloat(d.camx), camz: parseFloat(d.camz),
+            type: 'artefato',
+            nome: data.nome,
+            cat: data.cat,
+            colecao: data.colecao,
+            sala: data.sala,
+            camx: parseFloat(data.camx),
+            camz: parseFloat(data.camz),
             elId: el.id
         });
     });
+
+    loadSavedItems();
+    updateCollUI();
     renderSearch('');
+    setRoom('sala1');
+    clampCameraToRoom(true);
+    monitorPlayerBounds();
 }
 
-// ══════════════════════════════════════════
-// SPLASH
-// ══════════════════════════════════════════
+function selectStartRoom(roomId) {
+    startRoom = roomId;
+    document.getElementById('start-room-label').textContent = ROOMS[roomId].name;
+
+    Object.keys(ROOMS).forEach(id => {
+        const button = document.getElementById(`start-${id}`);
+        if (!button) return;
+        const active = id === roomId;
+        button.classList.toggle('active', active);
+        button.setAttribute('aria-pressed', active ? 'true' : 'false');
+    });
+}
+
 function enterExperience() {
-    const s = document.getElementById('splash');
-    s.classList.add('hidden');
-    setTimeout(() => s.remove(), 900);
+    const splash = document.getElementById('splash');
+    splash.classList.add('hidden');
+
+    setTimeout(() => {
+        splash.remove();
+        doTeleport(startRoom);
+        openQuickGuide();
+    }, 220);
 }
 
-// ══════════════════════════════════════════
-// TOAST
-// ══════════════════════════════════════════
-function showToast(msg) {
-    const t = document.getElementById('toast');
-    t.textContent = msg;
-    t.classList.add('show');
-    clearTimeout(t._tid);
-    t._tid = setTimeout(() => t.classList.remove('show'), 2800);
+function showToast(message, duration = TOAST_MS) {
+    const toast = document.getElementById('toast');
+    toast.textContent = message;
+    toast.classList.add('show');
+    clearTimeout(toast._tid);
+    toast._tid = setTimeout(() => toast.classList.remove('show'), duration);
 }
 
-// ══════════════════════════════════════════
-// TELEPORT — moves <a-camera> directly
-// ══════════════════════════════════════════
+function openQuickGuide() {
+    const guide = document.getElementById('quick-guide');
+    guide.classList.add('open');
+    guide.setAttribute('aria-hidden', 'false');
+}
+
+function closeQuickGuide() {
+    const guide = document.getElementById('quick-guide');
+    guide.classList.remove('open');
+    guide.setAttribute('aria-hidden', 'true');
+}
+
+function syncOverlayState() {
+    const hasOverlay = document.getElementById('search-wrap').classList.contains('open') ||
+        document.getElementById('help-modal').classList.contains('open') ||
+        inspectState.open;
+    document.body.classList.toggle('modal-open', hasOverlay);
+}
+
+function setMovementEnabled(enabled) {
+    const cam = document.getElementById('cam');
+    cam.setAttribute('look-controls', `pointerLockEnabled: false; magicWindowTrackingEnabled: false; enabled: ${enabled}`);
+    cam.setAttribute('wasd-controls', `acceleration: ${NAV_ACCELERATION}; enabled: ${enabled}`);
+}
+
+function setRoom(salaId) {
+    activeRoom = salaId;
+    document.getElementById('room-label').textContent = ROOMS[salaId].label;
+    document.querySelector('.hud-status').textContent = ROOMS[salaId].status;
+}
+
+function clampCameraToRoom(force) {
+    const cam = document.getElementById('cam');
+    const bounds = ROOM_BOUNDS[activeRoom];
+    if (!cam || !cam.object3D || !bounds) return;
+
+    const pos = cam.object3D.position;
+    const x = clamp(pos.x, bounds.minX, bounds.maxX);
+    const z = clamp(pos.z, bounds.minZ, bounds.maxZ);
+    const needsUpdate = force || Math.abs(x - pos.x) > 0.001 || Math.abs(z - pos.z) > 0.001 || Math.abs(pos.y - 1.65) > 0.001;
+
+    if (needsUpdate) {
+        cam.setAttribute('position', `${x.toFixed(2)} 1.65 ${z.toFixed(2)}`);
+    }
+}
+
+function monitorPlayerBounds() {
+    if (!inspectState.open) clampCameraToRoom(false);
+    requestAnimationFrame(monitorPlayerBounds);
+}
+
 function doTeleport(salaId, overX, overZ) {
+    closeInspect();
     const flash = document.getElementById('tp-flash');
     flash.classList.add('flash');
+
     setTimeout(() => {
         const cam = document.getElementById('cam');
-        const r = ROOMS[salaId];
-        const x = (overX !== undefined) ? overX : r.x;
-        const z = (overZ !== undefined) ? overZ : r.z;
-        // y=1.65 is the camera's eye height
+        const room = ROOMS[salaId];
+        const x = overX !== undefined ? overX : room.x;
+        const z = overZ !== undefined ? overZ : room.z;
+        setRoom(salaId);
         cam.setAttribute('position', `${x} 1.65 ${z}`);
-        document.getElementById('room-label').textContent = r.label;
+        clampCameraToRoom(true);
         flash.classList.remove('flash');
-        const names = { sala1:'Exposição Marajó', sala2:'Acervo Tupi-Guarani' };
-        showToast('Teletransportado → ' + names[salaId]);
+        showToast(`Entrou em ${room.name}.`, 2200);
     }, 160);
 }
 
-// ══════════════════════════════════════════
-// ARTIFACT PANEL
-// ══════════════════════════════════════════
-function openArtifact(el) {
+function closeCollectionPanel() {
     document.getElementById('coll-panel').classList.remove('open');
+    document.getElementById('coll-panel').setAttribute('aria-hidden', 'true');
     document.getElementById('btn-coll').classList.remove('active');
+}
 
-    const d = el.dataset;
-    current = d;
-
-    document.getElementById('p-cat').textContent    = d.cat;
-    document.getElementById('p-name').textContent   = d.nome;
-    document.getElementById('p-origin').textContent = d.origem;
-    document.getElementById('p-period').textContent = d.periodo;
-    document.getElementById('p-coll').textContent   = d.colecao;
-    document.getElementById('p-desc').textContent   = d.desc;
-
-    const kwEl = document.getElementById('p-kws');
-    kwEl.innerHTML = '';
-    d.kws.split(',').forEach(k => {
-        const s = document.createElement('span');
-        s.className = 'kw'; s.textContent = k.trim();
-        kwEl.appendChild(s);
-    });
-
-    const alreadySaved = saved.some(c => c.nome === d.nome);
-    const btn = document.getElementById('btn-save');
-    btn.textContent = alreadySaved ? '✓ Salvo na Coleção' : '＋ Salvar na Minha Coleção';
-    btn.className = 'btn-save' + (alreadySaved ? ' saved' : '');
-
-    document.getElementById('info-panel').classList.add('open');
+function openInfoPanel() {
+    const panel = document.getElementById('info-panel');
+    panel.classList.add('open');
+    panel.setAttribute('aria-hidden', 'false');
 }
 
 function closePanel() {
-    document.getElementById('info-panel').classList.remove('open');
-    current = null;
+    cancelPendingInspect();
+    hideInfoPanel(true);
 }
 
-// ══════════════════════════════════════════
-// SAVE
-// ══════════════════════════════════════════
+function renderInfoPanel(item) {
+    current = { ...item };
+    document.getElementById('p-cat').textContent = item.cat;
+    document.getElementById('p-name').textContent = item.nome;
+    document.getElementById('p-origin').textContent = item.origem;
+    document.getElementById('p-period').textContent = item.periodo;
+    document.getElementById('p-coll').textContent = item.colecao;
+    document.getElementById('p-desc').textContent = item.desc;
+
+    const keywords = document.getElementById('p-kws');
+    keywords.innerHTML = '';
+    item.kws.split(',').forEach(keyword => {
+        const tag = document.createElement('span');
+        tag.className = 'kw';
+        tag.textContent = keyword.trim();
+        keywords.appendChild(tag);
+    });
+
+    const alreadySaved = isItemSaved(item);
+    const saveBtn = document.getElementById('btn-save');
+    const inspectBtn = document.getElementById('btn-inspect');
+    const note = document.getElementById('p-note');
+
+    saveBtn.textContent = alreadySaved ? '✓ Salvo na Coleção' : '＋ Salvar na Minha Coleção';
+    saveBtn.className = 'btn-save' + (alreadySaved ? ' saved' : '');
+    inspectBtn.disabled = !item.elId;
+    inspectBtn.textContent = item.elId ? 'Examinar Agora' : 'Exame indisponível';
+    note.textContent = alreadySaved
+        ? 'Item salvo na sua coleção. Você pode abrir o exame por aqui, pela coleção ou com olhar prolongado na cena.'
+        : 'Você já pode examinar este item agora. Salvar continua opcional para montar sua coleção pessoal.';
+
+    openInfoPanel();
+}
+
+function openArtifact(el, options = {}) {
+    if (inspectState.open) return;
+    closeCollectionPanel();
+    if (options.source !== 'gaze') cancelPendingInspect();
+    renderInfoPanel(artifactFromElement(el));
+}
+
 function saveItem() {
-    if (!current || saved.some(c => c.nome === current.nome)) return;
+    if (!current) return;
+
+    if (isItemSaved(current)) {
+        showToast('Este item já está na sua coleção.');
+        renderInfoPanel(current);
+        return;
+    }
+
     saved.push({ ...current });
+    persistSavedItems();
     updateCollUI();
-    document.getElementById('btn-save').textContent = '✓ Salvo na Coleção';
-    document.getElementById('btn-save').className = 'btn-save saved';
-    showToast(`"${current.nome}" salvo na coleção`);
+    renderInfoPanel(current);
+    showToast(`"${current.nome}" salvo na coleção.`);
 }
 
 function updateCollUI() {
-    const n = saved.length;
-    document.getElementById('c-count').textContent = `${n} ${n===1?'item':'itens'} salvos`;
-    const b = document.getElementById('badge');
-    b.style.display = n > 0 ? 'inline-flex' : 'none';
-    b.textContent = n;
+    const total = saved.length;
+    document.getElementById('c-count').textContent = `${total} ${total === 1 ? 'item' : 'itens'} salvos`;
+
+    const badge = document.getElementById('badge');
+    badge.style.display = total > 0 ? 'inline-flex' : 'none';
+    badge.textContent = total;
 
     const list = document.getElementById('coll-list');
-    if (!n) {
-        list.innerHTML = '<div class="c-empty">Nenhum artefato salvo.<br><br>Olhe fixo para um objeto por 1,5s para abrir seu painel.</div>';
+    if (!total) {
+        list.innerHTML = '<div class="c-empty">Nenhum artefato salvo.<br><br>Salve artefatos para montar uma coleção pessoal, mas você já pode inspecionar qualquer item diretamente na exposição.</div>';
         return;
     }
-    list.innerHTML = saved.map((item, i) => `
-        <div class="c-item" onclick="openSavedItem(${i})">
+
+    list.innerHTML = saved.map((item, index) => `
+        <div class="c-item">
             <div class="c-item-name">${item.nome}</div>
             <div class="c-item-sub">${item.cat} · ${item.periodo}</div>
+            <div class="c-actions">
+                <button class="c-btn" onclick="openSavedItem(${index})" aria-label="Abrir detalhes de ${item.nome}">Detalhes</button>
+                <button class="c-btn primary" onclick="inspectSavedItem(${index})" aria-label="Examinar ${item.nome}">Examinar</button>
+            </div>
         </div>`).join('');
 }
 
-function openSavedItem(i) {
-    current = saved[i];
-    const d = current;
-    document.getElementById('p-cat').textContent    = d.cat;
-    document.getElementById('p-name').textContent   = d.nome;
-    document.getElementById('p-origin').textContent = d.origem;
-    document.getElementById('p-period').textContent = d.periodo;
-    document.getElementById('p-coll').textContent   = d.colecao;
-    document.getElementById('p-desc').textContent   = d.desc;
-    const kwEl = document.getElementById('p-kws');
-    kwEl.innerHTML = '';
-    d.kws.split(',').forEach(k => {
-        const s = document.createElement('span'); s.className='kw'; s.textContent=k.trim(); kwEl.appendChild(s);
-    });
-    document.getElementById('btn-save').textContent = '✓ Salvo na Coleção';
-    document.getElementById('btn-save').className = 'btn-save saved';
-    document.getElementById('coll-panel').classList.remove('open');
-    document.getElementById('btn-coll').classList.remove('active');
-    document.getElementById('info-panel').classList.add('open');
+function openSavedItem(index) {
+    const item = saved[index];
+    if (!item) return;
+    closeCollectionPanel();
+    renderInfoPanel(item);
 }
 
-// ══════════════════════════════════════════
-// PANELS
-// ══════════════════════════════════════════
+function inspectSavedItem(index) {
+    const item = saved[index];
+    if (item) inspectItem(item);
+}
+
 function toggleColl() {
-    const p = document.getElementById('coll-panel');
-    const ip = document.getElementById('info-panel');
-    const b  = document.getElementById('btn-coll');
-    const opening = !p.classList.contains('open');
-    p.classList.toggle('open');
-    b.classList.toggle('active', opening);
-    if (opening) ip.classList.remove('open');
+    if (inspectState.open) return;
+
+    const panel = document.getElementById('coll-panel');
+    const button = document.getElementById('btn-coll');
+    const opening = !panel.classList.contains('open');
+
+    panel.classList.toggle('open', opening);
+    panel.setAttribute('aria-hidden', opening ? 'false' : 'true');
+    button.classList.toggle('active', opening);
+
+    if (opening) hideInfoPanel(false);
 }
 
-// ══════════════════════════════════════════
-// SEARCH
-// ══════════════════════════════════════════
 function openSearch() {
-    document.getElementById('search-wrap').classList.add('open');
+    cancelPendingInspect();
+    closeHelp();
+    closeCollectionPanel();
+    hideInfoPanel(false);
+
+    const search = document.getElementById('search-wrap');
+    search.classList.add('open');
+    search.setAttribute('aria-hidden', 'false');
     document.getElementById('search-input').value = '';
     renderSearch('');
+    syncOverlayState();
     setTimeout(() => document.getElementById('search-input').focus(), 40);
 }
-function closeSearch() { document.getElementById('search-wrap').classList.remove('open'); }
-function overlayClick(e) { if (e.target === document.getElementById('search-wrap')) closeSearch(); }
-function onSearch(v) { renderSearch(v.trim().toLowerCase()); }
 
-function renderSearch(q) {
+function closeSearch() {
+    const search = document.getElementById('search-wrap');
+    search.classList.remove('open');
+    search.setAttribute('aria-hidden', 'true');
+    syncOverlayState();
+}
+
+function overlayClick(event) {
+    if (event.target === document.getElementById('search-wrap')) closeSearch();
+}
+
+function onSearch(value) {
+    renderSearch(value.trim().toLowerCase());
+}
+
+function renderSearch(query) {
     const box = document.getElementById('search-results');
-    const items = q ? searchIdx.filter(it =>
-        `${it.nome} ${it.colecao||''} ${it.cat||''} ${it.sala}`.toLowerCase().includes(q)
-    ) : searchIdx;
+    const items = query
+        ? searchIdx.filter(item => `${item.nome} ${item.colecao || ''} ${item.cat || ''} ${item.sala}`.toLowerCase().includes(query))
+        : searchIdx;
 
-    if (!items.length) { box.innerHTML = '<div class="s-empty">Nenhum resultado encontrado.</div>'; return; }
+    if (!items.length) {
+        box.innerHTML = '<div class="s-empty">Nenhum resultado encontrado.</div>';
+        return;
+    }
 
-    const cols = items.filter(i => i.type==='colecao');
-    const arts = items.filter(i => i.type==='artefato');
-    const sNome = { sala1:'Exposição Marajó', sala2:'Acervo Tupi-Guarani' };
+    const collections = items.filter(item => item.type === 'colecao');
+    const artifacts = items.filter(item => item.type === 'artefato');
+    const roomNames = { sala1: 'Exposição Marajó', sala2: 'Acervo Tupi-Guarani' };
     let html = '';
 
-    if (cols.length) {
+    if (collections.length) {
         html += '<div class="s-label">Coleções</div>';
-        cols.forEach(it => {
-            html += `<div class="s-row" onclick="goCollection('${it.nome}','${it.sala}')">
+        collections.forEach(item => {
+            html += `<div class="s-row" onclick="goCollection('${item.nome}','${item.sala}')">
                 <div class="s-icon col">🏛️</div>
-                <div><div class="s-name">${it.nome}</div><div class="s-sub">${sNome[it.sala]}</div></div>
+                <div><div class="s-name">${item.nome}</div><div class="s-sub">${roomNames[item.sala]}</div></div>
                 <div class="s-go">↗ Ir para sala</div>
             </div>`;
         });
     }
-    if (arts.length) {
+
+    if (artifacts.length) {
         html += '<div class="s-label">Artefatos</div>';
-        arts.forEach(it => {
-            html += `<div class="s-row" onclick="goArtifact('${it.elId}','${it.sala}',${it.camx},${it.camz})">
+        artifacts.forEach(item => {
+            html += `<div class="s-row" onclick="goArtifact('${item.elId}','${item.sala}',${item.camx},${item.camz})">
                 <div class="s-icon art">🏺</div>
-                <div><div class="s-name">${it.nome}</div><div class="s-sub">${it.cat} · ${it.colecao}</div></div>
+                <div><div class="s-name">${item.nome}</div><div class="s-sub">${item.cat} · ${item.colecao}</div></div>
                 <div class="s-go">↗ Ir para artefato</div>
             </div>`;
         });
     }
+
     box.innerHTML = html;
 }
 
 function goCollection(nome, sala) {
     closeSearch();
     doTeleport(sala);
-    setTimeout(() => showToast('Coleção: ' + nome), 280);
+    setTimeout(() => showToast(`Coleção: ${nome}`), 280);
 }
 
 function goArtifact(elId, sala, camx, camz) {
     closeSearch();
-    // teleport to stored cam position (already 3.5 units in front of artifact)
     doTeleport(sala, camx, camz);
     setTimeout(() => {
         const el = document.getElementById(elId);
-        if (el) openArtifact(el);
+        if (el) openArtifact(el, { source: 'search' });
     }, 300);
 }
 
-// ══════════════════════════════════════════
-// KEYBOARD
-// ══════════════════════════════════════════
-document.addEventListener('keydown', e => {
-    if ((e.ctrlKey || e.metaKey) && e.key === 'k') { e.preventDefault(); openSearch(); return; }
-    if (e.key === 'Escape') {
+function openHelp() {
+    cancelPendingInspect();
+    closeSearch();
+    closeCollectionPanel();
+    hideInfoPanel(false);
+
+    const help = document.getElementById('help-modal');
+    help.classList.add('open');
+    help.setAttribute('aria-hidden', 'false');
+    syncOverlayState();
+}
+
+function closeHelp() {
+    const help = document.getElementById('help-modal');
+    help.classList.remove('open');
+    help.setAttribute('aria-hidden', 'true');
+    syncOverlayState();
+}
+
+function overlayClickHelp(event) {
+    if (event.target === document.getElementById('help-modal')) closeHelp();
+}
+
+function openCuratorHint() {
+    showToast('Painel do curador ainda não foi publicado neste protótipo.', 3600);
+}
+
+function persistSavedItems() {
+    try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+    } catch (error) {
+        console.warn('Não foi possível salvar a coleção localmente.', error);
+    }
+}
+
+function loadSavedItems() {
+    let stored = [];
+    try {
+        stored = JSON.parse(localStorage.getItem(STORAGE_KEY) || '[]');
+    } catch (error) {
+        stored = [];
+    }
+
+    if (!Array.isArray(stored)) stored = [];
+
+    const idsByName = {};
+    document.querySelectorAll('.interativo[data-nome]').forEach(el => {
+        idsByName[el.dataset.nome] = el.id;
+    });
+
+    saved.length = 0;
+    stored.forEach(item => {
+        if (!item || !item.nome) return;
+        const normalized = { ...item, elId: item.elId || idsByName[item.nome] };
+        if (!normalized.elId || isItemSaved(normalized)) return;
+        saved.push(normalized);
+    });
+
+    persistSavedItems();
+}
+
+function stripInspectAttrs(node) {
+    if (node.removeAttribute) {
+        node.removeAttribute('id');
+        node.removeAttribute('class');
+    }
+    Array.from(node.children).forEach(stripInspectAttrs);
+}
+
+function applyInspectTransform() {
+    const anchor = document.getElementById('inspect-anchor');
+    const model = document.getElementById('inspect-item-root');
+    anchor.setAttribute('position', `0 -0.02 ${inspectState.distance}`);
+    model.setAttribute('rotation', `${inspectState.rotX} ${inspectState.rotY} 0`);
+    model.setAttribute('scale', '1.9 1.9 1.9');
+}
+
+function resetInspectView() {
+    inspectState.rotX = 8;
+    inspectState.rotY = 0;
+    inspectState.distance = -1.72;
+    applyInspectTransform();
+}
+
+function rotateInspect(delta) {
+    if (!inspectState.open) return;
+    inspectState.rotY += delta;
+    applyInspectTransform();
+}
+
+function adjustInspectZoom(delta) {
+    if (!inspectState.open) return;
+    inspectState.distance = clamp(inspectState.distance + delta, -2.65, -0.98);
+    applyInspectTransform();
+}
+
+function inspectCurrentItem() {
+    if (!current) return;
+    inspectItem(current);
+}
+
+function inspectItem(item) {
+    if (!item || !item.elId) {
+        showToast('Este item não pode ser examinado agora.');
+        return;
+    }
+
+    stopGazeVisual();
+    hoverState.target = null;
+    hoverState.start = 0;
+    cancelPendingInspect();
+
+    const source = document.getElementById(item.elId);
+    const root = document.getElementById('inspect-item-root');
+    if (!source || !root) return;
+
+    closeSearch();
+    closeHelp();
+    closeCollectionPanel();
+    hideInfoPanel(false);
+
+    current = { ...item };
+    inspectState.open = true;
+    inspectState.item = { ...item };
+    inspectState.dragging = false;
+    root.innerHTML = '';
+
+    const clone = source.cloneNode(true);
+    stripInspectAttrs(clone);
+    clone.setAttribute('position', '0 0 0');
+    clone.setAttribute('rotation', '0 0 0');
+    clone.setAttribute('scale', '1 1 1');
+    root.appendChild(clone);
+
+    document.getElementById('inspect-title').textContent = item.nome;
+    document.getElementById('inspect-sub').textContent = `${item.cat} · ${item.periodo}`;
+    document.getElementById('inspect-anchor').setAttribute('visible', 'true');
+    document.getElementById('inspect-modal').classList.add('open');
+    document.getElementById('inspect-modal').setAttribute('aria-hidden', 'false');
+
+    resetInspectView();
+    setMovementEnabled(false);
+    syncOverlayState();
+    showToast('Modo de exame aberto.', 1800);
+}
+
+function closeInspect() {
+    if (!inspectState.open) return;
+
+    inspectState.open = false;
+    inspectState.item = null;
+    inspectState.dragging = false;
+    document.getElementById('inspect-stage').classList.remove('dragging');
+    document.getElementById('inspect-modal').classList.remove('open');
+    document.getElementById('inspect-modal').setAttribute('aria-hidden', 'true');
+    document.getElementById('inspect-anchor').setAttribute('visible', 'false');
+    document.getElementById('inspect-item-root').innerHTML = '';
+    setMovementEnabled(true);
+    syncOverlayState();
+}
+
+function setupInspectStage() {
+    const stage = document.getElementById('inspect-stage');
+    if (!stage || stage.dataset.bound === 'true') return;
+
+    stage.dataset.bound = 'true';
+    stage.addEventListener('pointerdown', event => {
+        if (!inspectState.open) return;
+        inspectState.dragging = true;
+        inspectState.lastX = event.clientX;
+        inspectState.lastY = event.clientY;
+        stage.classList.add('dragging');
+        if (stage.setPointerCapture) stage.setPointerCapture(event.pointerId);
+    });
+
+    stage.addEventListener('pointermove', event => {
+        if (!inspectState.open || !inspectState.dragging) return;
+        const deltaX = event.clientX - inspectState.lastX;
+        const deltaY = event.clientY - inspectState.lastY;
+        inspectState.lastX = event.clientX;
+        inspectState.lastY = event.clientY;
+        inspectState.rotY += deltaX * INSPECT_ROTATE_SENSITIVITY;
+        inspectState.rotX = clamp(inspectState.rotX + deltaY * INSPECT_PITCH_SENSITIVITY, -28, 28);
+        applyInspectTransform();
+    });
+
+    const stopDrag = event => {
+        inspectState.dragging = false;
+        stage.classList.remove('dragging');
+        if (event && stage.releasePointerCapture) {
+            try { stage.releasePointerCapture(event.pointerId); } catch (error) { }
+        }
+    };
+
+    stage.addEventListener('pointerup', stopDrag);
+    stage.addEventListener('pointercancel', stopDrag);
+    stage.addEventListener('pointerleave', stopDrag);
+    stage.addEventListener('wheel', event => {
+        if (!inspectState.open) return;
+        event.preventDefault();
+        adjustInspectZoom(event.deltaY < 0 ? INSPECT_ZOOM_STEP : -INSPECT_ZOOM_STEP);
+    }, { passive: false });
+}
+
+function overlayClickInspect(event) {
+    if (event.target === document.getElementById('inspect-modal')) closeInspect();
+}
+
+document.addEventListener('keydown', event => {
+    const key = event.key.toLowerCase();
+    const splashVisible = !!document.getElementById('splash') && !document.getElementById('splash').classList.contains('hidden');
+
+    if (splashVisible) {
+        if (event.key === '1') { selectStartRoom('sala1'); return; }
+        if (event.key === '2') { selectStartRoom('sala2'); return; }
+        if (event.key === 'Enter') { enterExperience(); return; }
+    }
+
+    if (inspectState.open) {
+        if (event.key === 'Escape') { closeInspect(); return; }
+        if (key === 'a' || event.key === 'ArrowLeft') { event.preventDefault(); rotateInspect(-INSPECT_ROTATE_STEP); return; }
+        if (key === 'd' || event.key === 'ArrowRight') { event.preventDefault(); rotateInspect(INSPECT_ROTATE_STEP); return; }
+        if (event.key === 'ArrowUp') { event.preventDefault(); inspectState.rotX = clamp(inspectState.rotX - 4, -28, 28); applyInspectTransform(); return; }
+        if (event.key === 'ArrowDown') { event.preventDefault(); inspectState.rotX = clamp(inspectState.rotX + 4, -28, 28); applyInspectTransform(); return; }
+        if (event.key === '+' || event.key === '=') { event.preventDefault(); adjustInspectZoom(INSPECT_ZOOM_STEP); return; }
+        if (event.key === '-' || event.key === '_') { event.preventDefault(); adjustInspectZoom(-INSPECT_ZOOM_STEP); return; }
+        if (key === 'r') { event.preventDefault(); resetInspectView(); return; }
+        return;
+    }
+
+    if ((event.ctrlKey || event.metaKey) && key === 'k') {
+        event.preventDefault();
+        openSearch();
+        return;
+    }
+
+    if (event.key === 'F1') {
+        event.preventDefault();
+        openHelp();
+        return;
+    }
+
+    if (event.key === 'Escape') {
+        if (document.getElementById('help-modal').classList.contains('open')) { closeHelp(); return; }
         if (document.getElementById('search-wrap').classList.contains('open')) { closeSearch(); return; }
         closePanel();
-        document.getElementById('coll-panel').classList.remove('open');
-        document.getElementById('btn-coll').classList.remove('active');
+        closeCollectionPanel();
     }
-    if (e.key === 'Enter' && document.getElementById('search-wrap').classList.contains('open')) {
+
+    if (event.key === 'Enter' && document.getElementById('search-wrap').classList.contains('open')) {
         const first = document.querySelector('.s-row');
         if (first) first.click();
     }
