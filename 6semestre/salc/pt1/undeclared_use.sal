@@ -1,0 +1,5 @@
+module m;
+proc main()
+start
+  x := 1;
+end
